@@ -1,6 +1,9 @@
 # DotPrompt
 
-[![NuGet version](https://badge.fury.io/nu/DotPrompt.svg)](https://badge.fury.io/nu/DotPrompt)
+![NuGet Version](https://img.shields.io/nuget/v/DotPrompt)
+![GitHub License](https://img.shields.io/github/license/elastacloud/DotPrompt)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/elastacloud/DotPrompt/dotnet.yml)
+
 
 A simple library which allows you to build prompts using a configuration-based syntax without needing to embed them into your application. It supports templating for user prompts through the [Fluid](https://github.com/sebastienros/fluid) templating language, meaning you can re-use the same prompt and pass in different values at runtime. The templating language also allows for conditions, so you can change how the prompt is generated based on those variable values.
 
@@ -206,3 +209,5 @@ There's still scope for work to do here and some of the items we're looking at i
 * Additional prompting techniques
 * A prompt manager, allowing you to define a single location for your prompts and then using the manager to access the right prompt
 * Open to feedback. Is there something you'd like to see? Let us know
+
+![Static Badge](https://img.shields.io/badge/Badges_by-shields.io-blue?link=https%3A%2F%2Fshields.io)
