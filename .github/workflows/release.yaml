@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-         fetch-tags: true
+        fetch-tags: 'true'
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
@@ -24,4 +24,6 @@ jobs:
     - name: Package
       env:
         RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
-      run: dotnet pack -p:PackageVersion=$RELEASE_VERSION
+      run: |
+        echo $RELEASE_VERSION
+        dotnet pack -p:PackageVersion=$RELEASE_VERSION
