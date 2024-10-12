@@ -1,5 +1,7 @@
 # DotPrompt
 
+[![NuGet version](https://badge.fury.io/nu/DotPrompt.svg)](https://badge.fury.io/nu/DotPrompt)
+
 A simple library which allows you to build prompts using a configuration-based syntax without needing to embed them into your application. It supports templating for user prompts through the [Fluid](https://github.com/sebastienros/fluid) templating language, meaning you can re-use the same prompt and pass in different values at runtime. The templating language also allows for conditions, so you can change how the prompt is generated based on those variable values.
 
 A prompt file is simply any file ending with a `.prompt` extension. The actual file itself is
