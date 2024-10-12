@@ -12,13 +12,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+         fetch-tags: true
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
     - name: Get latest tag version
       id: vars
-      run: echo "GIT_TAG=`echo $(git describe --tags --abbrev=0)`" >> $GITHUB_OUTPUT
+      run: echo "tag=`echo $(git describe --tags --abbrev=0)`" >> $GITHUB_OUTPUT
     - name: Package
       env:
         RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
