@@ -1,0 +1,9 @@
+config:
+  outputFormat: text
+  input:
+    parameters:
+      name: string
+      oops: cat
+prompts:
+  user: |
+    Is it safe to travel using hyperspace jumps if I'm from a Plural region, such as ZZ9 Plural Z Alpha

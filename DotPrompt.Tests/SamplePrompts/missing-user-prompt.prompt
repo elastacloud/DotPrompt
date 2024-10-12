@@ -1,0 +1,13 @@
+config:
+  outputFormat: text
+  temperature: 0.9
+  maxTokens: 500
+  input:
+    parameters:
+      country: string
+      style?: string
+    default:
+      country: Malta
+prompts:
+  system: |
+    You are a helpful AI assistant that enjoys making penguin related puns. You should work as many into your response as possible

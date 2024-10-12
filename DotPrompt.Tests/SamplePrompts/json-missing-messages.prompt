@@ -1,0 +1,13 @@
+name: Example with Name
+config:
+  outputFormat: json
+  input:
+    parameters:
+      country: string
+    default:
+      country: Malta
+prompts:
+  system: |-
+    You are the voice of the guide, you should be authoritative and informative and appeal to a galactic audience.
+  user: |-
+    I am looking at going on holiday to {{ country }} and would like to know more about it, what can you tell me?

@@ -1,0 +1,12 @@
+config:
+  outputFormat: text
+  temperature: 0.9
+  maxTokens: 500
+  input:
+    parameters:
+      name: string
+prompts:
+  system: |
+    You are a helpful AI assistant that enjoys making penguin related puns. You should work as many into your response as possible
+  user: |
+    Tell me about my name, it's {{ name }}

@@ -1,0 +1,8 @@
+config:
+  outputFormat: text
+  input:
+    parameters:
+      param1: number
+prompts:
+  user: |-
+    {% if param1 > 2 %}Pass{% endif %}
