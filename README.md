@@ -103,7 +103,7 @@ using DotPrompt;
 
 var promptFile = PromptFile.FromFile("path/to/prompt-file.prompt");
 
-var systemPrompt = promptFile.GetSystemPrompt();
+var systemPrompt = promptFile.GetSystemPrompt(null);
 var userPrompt = promptFile.GetUserPrompt(new Dictionary<string, object>
 {
     { "topic", "bluetooth" },
@@ -146,7 +146,9 @@ var client = openAiClient.GetChatClient("model");
 
 var promptFile = PromptFile.FromFile("path/to/prompt-file.prompt");
 
-var systemPrompt = promptFile.GetSystemPrompt();
+// The system prompt and user prompt methods take dictionaries containing the values needed for the
+// template. If none are needed you can simply pass in null.
+var systemPrompt = promptFile.GetSystemPrompt(null);
 var userPrompt = promptFile.GetUserPrompt(new Dictionary<string, object>
 {
     { "topic", "bluetooth" },

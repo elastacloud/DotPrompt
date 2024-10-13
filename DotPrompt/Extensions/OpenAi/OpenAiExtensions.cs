@@ -18,7 +18,7 @@ public static class OpenAiExtensions
     {
         var messages = new List<ChatMessage>();
 
-        // If the prompt file provides any few shot prompts then include these first
+        // If the prompt file provides any few shot prompts, then include these first
         if (promptFile.FewShots.Length != 0)
         {
             foreach (var fewShot in promptFile.FewShots)
@@ -30,7 +30,7 @@ public static class OpenAiExtensions
 
         if (!string.IsNullOrEmpty(promptFile.Prompts!.System))
         {
-            messages.Add(new SystemChatMessage(promptFile.GetSystemPrompt()));
+            messages.Add(new SystemChatMessage(promptFile.GetSystemPrompt(values)));
         }
         
         messages.Add(new UserChatMessage(promptFile.GetUserPrompt(values)));
