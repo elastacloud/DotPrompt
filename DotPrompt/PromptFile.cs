@@ -122,12 +122,15 @@ public class PromptFile
     /// <summary>
     /// Gets the system prompt
     /// </summary>
+    /// <param name="values">The value needed to populate the template</param>
     /// <remarks>If the prompt specifies a JSON response format but doesn't use the term JSON in the system prompt then
     /// it is appended as a simple request to ensure the LLM does not reject the request.</remarks>
-    /// <returns>A string representing the system prompt, if none was defined then this will return an empty string</returns>
-    public string GetSystemPrompt()
+    /// <returns>A string representing the system prompt, if none was defined, then this will return an empty string</returns>
+    public string GetSystemPrompt(IDictionary<string, object>? values)
     {
         var systemPrompt = Prompts!.System ?? string.Empty;
+
+        var clonedValues = CloneAndValidateInputParameters(values);
 
         if (Config.OutputFormat == OutputFormat.Json &&
             !systemPrompt.Contains("JSON", StringComparison.InvariantCultureIgnoreCase) &&
@@ -140,16 +143,57 @@ public class PromptFile
                 : systemPrompt + " " + jsonObjectRequest;
         }
 
-        return systemPrompt;
+        return GeneratePrompt(systemPrompt, clonedValues);
     }
 
     /// <summary>
-    /// Gets the user prompt from the definitions template, substituting the values provided
+    /// Gets the user prompt from the definition's template, substituting the values provided
     /// </summary>
     /// <param name="values">The value needed to populate the template</param>
     /// <returns>The completed user prompt</returns>
     /// <exception cref="DotPromptException">Thrown if there is an error with the template or with the values provided</exception>
     public string GetUserPrompt(IDictionary<string, object>? values)
+    {
+        var clonedValues = CloneAndValidateInputParameters(values);
+        return GeneratePrompt(Prompts!.User, clonedValues);
+    }
+
+    /// <summary>
+    /// Takes an input prompt template and generates the rendered template using the parameter values provided
+    /// </summary>
+    /// <param name="promptTemplate">The prompt template to parse and render</param>
+    /// <param name="values">The values needed to populate the template</param>
+    /// <returns>A rendered template</returns>
+    /// <exception cref="DotPromptException">Thrown if the template syntax is invalid</exception>
+    private static string GeneratePrompt(string promptTemplate, Dictionary<string, object> values)
+    {
+        var parser = new FluidParser();
+        var context = new TemplateContext();
+
+        foreach (var (key, value) in values)
+        {
+            context.SetValue(key, value);
+        }
+
+        if (!parser.TryParse(promptTemplate, out var template, out var error))
+        {
+            throw new DotPromptException($"Unable to parse the prompt template: {error}");
+        }
+
+        return template.Render(context);
+    }
+
+    /// <summary>
+    /// Creates a clone of the input parameters so that the provided values are not modified, causing unexpected
+    /// behaviour in the client code. The values are then validated against the prompt files parameters.
+    /// </summary>
+    /// <param name="values">The values to clone and validate</param>
+    /// <returns>The validated parameter values</returns>
+    /// <exception cref="DotPromptException">
+    /// Thrown if the user-provided values contain an issue such as not containing required parameters, or the value
+    /// not conforming to the input parameters type.
+    /// </exception>
+    private Dictionary<string, object> CloneAndValidateInputParameters(IDictionary<string, object>? values)
     {
         var clonedValues = values?.ToDictionary(v => v.Key, v => v.Value)
                            ?? new Dictionary<string, object>();
@@ -200,19 +244,6 @@ public class PromptFile
             }
         }
 
-        var parser = new FluidParser();
-        var context = new TemplateContext();
-
-        foreach (var (key, value) in clonedValues)
-        {
-            context.SetValue(key, value);
-        }
-
-        if (!parser.TryParse(Prompts!.User, out var template, out var error))
-        {
-            throw new DotPromptException($"Unable to parse the user prompt template: {error}");
-        }
-
-        return template.Render(context);
+        return clonedValues;
     }
 }

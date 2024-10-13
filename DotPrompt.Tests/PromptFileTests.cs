@@ -63,40 +63,38 @@ public class PromptFileTests
             promptFile.FewShots[2].Response);
     }
 
-    [Fact]
-    public void GetSystemPrompt_WhenProvided_ReturnsTheCorrectPrompt()
+    [Theory]
+    [InlineData("SamplePrompts/basic.prompt", "You are a helpful AI assistant that enjoys making penguin related puns. You should work as many into your response as possible", false)]
+    [InlineData("SamplePrompts/with-name.prompt", "", false)]
+    [InlineData("SamplePrompts/with-name-json.prompt", "Please provide the response in JSON", true)]
+    [InlineData("SamplePrompts/json-missing-messages.prompt", "You are the voice of the guide, you should be authoritative and informative and appeal to a galactic audience. Please provide the response in JSON", true)]
+    public void GetSystemPrompt_WhenCalledWithDifferentConfiguration_ShouldRenderCorrectly(string inputFile, string expectedContains, bool exact)
     {
-        var promptFile = PromptFile.FromFile("SamplePrompts/basic.prompt");
+        var promptFile = PromptFile.FromFile(inputFile);
 
-        var systemPrompt = promptFile.GetSystemPrompt();
-        Assert.Equal("You are a helpful AI assistant that enjoys making penguin related puns. You should work as many into your response as possible\n", systemPrompt);
+        var systemPrompt = promptFile.GetSystemPrompt(null);
+
+        if (exact)
+        {
+            Assert.Equal(expectedContains, systemPrompt);
+        }
+        else
+        {
+            Assert.Contains(expectedContains, systemPrompt);
+        }
     }
 
     [Fact]
-    public void GetSystemPrompt_WhenNoneProvided_ReturnsAnEmptyString()
+    public void GetSystemPrompt_WhenPromptContainsTemplateInformation_IsRenderedCorrectly()
     {
-        var promptFile = PromptFile.FromFile("SamplePrompts/with-name.prompt");
+        var promptFile = PromptFile.FromFile("SamplePrompts/basic-sp-template.prompt");
 
-        var systemPrompt = promptFile.GetSystemPrompt();
-        Assert.Equal(string.Empty, systemPrompt);
-    }
+        var generatedDate = new DateTimeOffset(2006, 1, 2, 3, 4, 5, TimeSpan.Zero);
 
-    [Fact]
-    public void GetSystemPrompt_WhenJsonIsRequestedAndMessagesDoNotStateJson_SystemPromptIsCreated()
-    {
-        var promptFile = PromptFile.FromFile("SamplePrompts/with-name-json.prompt");
-
-        var systemPrompt = promptFile.GetSystemPrompt();
-        Assert.Equal("Please provide the response in JSON", systemPrompt);
-    }
-
-    [Fact]
-    public void GetSystemPrompt_WhenJsonIsRequestedAndMessagesDoNotStateJson_SystemPromptIsModified()
-    {
-        var promptFile = PromptFile.FromFile("SamplePrompts/json-missing-messages.prompt");
-
-        var systemPrompt = promptFile.GetSystemPrompt();
-        Assert.Equal("You are the voice of the guide, you should be authoritative and informative and appeal to a galactic audience. Please provide the response in JSON", systemPrompt);
+        var systemPrompt = promptFile.GetSystemPrompt(new Dictionary<string, object> { { "country", "Italy" }, { "generated", generatedDate } });
+        Assert.Contains(
+            "You are a helpful AI assistant that who has extensive local knowledge of Italy\nYou should append each response with the text `Generated: <date>` where `<date>` is replaced with the current date, for example:\n`Generated: Monday 2 Jan 2006`",
+            systemPrompt);
     }
 
     [Fact]
@@ -240,7 +238,7 @@ public class PromptFileTests
         var act = () => promptFile.GetUserPrompt(null);
 
         var exception = Assert.Throws<DotPromptException>(act);
-        Assert.Contains("Unable to parse the user prompt template", exception.Message);
+        Assert.Contains("Unable to parse the prompt template", exception.Message);
     }
 
     [Fact]

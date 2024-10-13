@@ -1,0 +1,23 @@
+config:
+  outputFormat: text
+  temperature: 0.9
+  maxTokens: 500
+  input:
+    parameters:
+      country: string
+      style?: string
+      generated?: datetime
+    default:
+      country: Malta
+prompts:
+  system: |-
+    You are a helpful AI assistant that who has extensive local knowledge of {{ country }}
+    {% if generated -%}
+    You should append each response with the text `Generated: <date>` where `<date>` is replaced with the current date, for example:
+    `Generated: {{ generated | format_date:"dddd d MMM yyyy", "en-gb" }}`
+    {% endif -%}
+  user: |
+    I am looking at going on holiday to {{ country }} and would like to know more about it, what can you tell me?
+    {% if style -%}
+    Can you answer in the style of a {{ style }}
+    {% endif -%}
