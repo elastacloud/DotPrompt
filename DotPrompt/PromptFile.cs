@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
 using Fluid;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
@@ -104,6 +106,14 @@ public class PromptFile
         if (string.IsNullOrEmpty(promptFile.Name))
         {
             promptFile.Name = name;
+        }
+        
+        // Ensure the name conforms to standards
+        var originalName = promptFile.Name;
+        promptFile.Name = CleanName(promptFile.Name);
+        if (string.IsNullOrEmpty(promptFile.Name))
+        {
+            throw new DotPromptException($"The provided name '{originalName}' once cleaned results in an empty string");
         }
         
         // Check the data types of the parameters
@@ -245,5 +255,23 @@ public class PromptFile
         }
 
         return clonedValues;
+    }
+
+    /// <summary>
+    /// Cleans the given name by removing invalid characters and normalising whitespace
+    /// </summary>
+    /// <param name="name">The name to be cleaned</param>
+    /// <returns>The cleaned name, with invalid characters removed and whitespace normalised to dashes</returns>
+    private static string CleanName(string name)
+    {
+        var invalidCharsRegex = new Regex(@"([^A-Za-z0-9 \r\n]*)", RegexOptions.Compiled | RegexOptions.Multiline);
+        var multipleSpacesRegex = new Regex(@"[\s\r\n]+", RegexOptions.Compiled | RegexOptions.Multiline);
+
+        var strippedName = invalidCharsRegex.Replace(name, "");
+        var trimmedName = multipleSpacesRegex.Replace(strippedName, "-")
+            .Trim('-')
+            .ToLower(CultureInfo.InvariantCulture);
+        
+        return trimmedName;
     }
 }
