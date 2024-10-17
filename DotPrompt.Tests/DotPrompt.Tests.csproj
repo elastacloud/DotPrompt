@@ -29,10 +29,10 @@
     <None Update="prompts\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="manager-prompts\*">
+    <None Update="manager-prompts\**">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="manager-prompts\sub-dir\with-name.prompt">
+    <None Update="duplicate-name-prompts\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

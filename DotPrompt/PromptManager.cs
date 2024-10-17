@@ -40,7 +40,11 @@ public class PromptManager
         foreach (var file in promptDirectory.EnumerateFiles("*.prompt", options))
         {
             var promptFile = PromptFile.FromFile(file.FullName);
-            _promptFiles.TryAdd(promptFile.Name, promptFile);
+
+            if (!_promptFiles.TryAdd(promptFile.Name, promptFile))
+            {
+                throw new DotPromptException($"Unable to add prompt file with name '{promptFile.Name}' from path '{file.FullName}' as a duplicate exists");
+            }
         }
     }
 

@@ -38,6 +38,16 @@ public class PromptManagerTests
     }
 
     [Fact]
+    public void PromptManager_WithDuplicateNames_ThrowsException()
+    {
+        var act = () => new PromptManager("duplicate-name-prompts");
+
+        var exception = Assert.Throws<DotPromptException>(act);
+
+        Assert.Contains("a duplicate exists", exception.Message);
+    }
+
+    [Fact]
     public void GetPromptFile_WhenRequestedWithValidName_LoadsExpectedPromptFile()
     {
         var manager = new PromptManager();
