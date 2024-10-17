@@ -20,7 +20,7 @@ name: Example
 config:
   outputFormat: text
   temperature: 0.9
-  maxOutputTokens: 500
+  maxTokens: 500
   input:
     parameters:
       topic: string
