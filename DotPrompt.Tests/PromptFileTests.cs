@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace DotPrompt.Tests;
 
 public class PromptFileTests
@@ -42,7 +44,7 @@ public class PromptFileTests
     {
         var promptFile = PromptFile.FromFile("SamplePrompts/with-name-json.prompt");
         
-        Assert.Equal("Example with Name", promptFile.Name);
+        Assert.Equal("example-with-name", promptFile.Name);
         Assert.Equal(OutputFormat.Json, promptFile.Config.OutputFormat);
         Assert.Null(promptFile.Config.Temperature);
         Assert.Null(promptFile.Config.MaxTokens);
@@ -61,6 +63,16 @@ public class PromptFileTests
         Assert.Equal(
             "AI is used in virtual assistants like Siri and Alexa, which understand and respond to voice commands.",
             promptFile.FewShots[2].Response);
+    }
+
+    [Theory]
+    [InlineData("SamplePrompts/name-with-invalid-characters.prompt", "dont-use-names-like-this")]
+    [InlineData("SamplePrompts/multiline-name.prompt", "name-which-is-over-multiple-lines")]
+    public void FromFile_WithNameContainingInvalidChars_IsCleaned(string promptFilePath, string expectedName)
+    {
+        var promptFile = PromptFile.FromFile(promptFilePath);
+        
+        Assert.Equal(expectedName, promptFile.Name);
     }
 
     [Theory]
@@ -153,6 +165,31 @@ public class PromptFileTests
 
         var exception = Assert.Throws<ArgumentException>(act);
         Assert.Contains("Stream is not in a readable state", exception.Message);
+    }
+
+    [Fact]
+    public void FromStream_WithInvalidCharactersInNameForWindows_CleansTheName()
+    {
+        const string content = "prompts:\n  system: System prompt\n  user: User prompt";
+        using var ms = new MemoryStream(Encoding.UTF8.GetBytes(content));
+        ms.Seek(0, SeekOrigin.Begin);
+
+        var promptFile = PromptFile.FromStream("clean\r\n\r\nthis name", ms);
+
+        Assert.Equal("clean-this-name", promptFile.Name);
+    }
+
+    [Fact]
+    public void FromStream_WithInvalidName_ThrowsAnException()
+    {
+        const string content = "prompts:\n  system: System prompt\n  user: User prompt";
+        using var ms = new MemoryStream(Encoding.UTF8.GetBytes(content));
+        ms.Seek(0, SeekOrigin.Begin);
+
+        var act = () => PromptFile.FromStream("++ -- ()", ms);
+
+        var exception = Assert.Throws<DotPromptException>(act);
+        Assert.Contains("once cleaned results in an empty string", exception.Message);
     }
 
     [Fact]

@@ -1,0 +1,19 @@
+name: Don't <use> _names_ like ++++ th()is
+config:
+  outputFormat: text
+  temperature: 0.9
+  maxTokens: 500
+  input:
+    parameters:
+      country: string
+      style?: string
+    default:
+      country: Malta
+prompts:
+  system: |
+    You are a helpful AI assistant that enjoys making penguin related puns. You should work as many into your response as possible
+  user: |
+    I am looking at going on holiday to {{ country }} and would like to know more about it, what can you tell me?
+    {% if style -%}
+    Can you answer in the style of a {{ style }}
+    {% endif -%}

@@ -1,0 +1,15 @@
+name: Example with Name
+config:
+  outputFormat: text
+  input:
+    parameters:
+      country: string
+      style?: string
+    default:
+      country: Malta
+prompts:
+  user: |
+    I am looking at going on holiday to {{ country }} and would like to know more about it, what can you tell me?
+    {% if style -%}
+    Can you answer in the style of a {{ style }}
+    {% endif -%}

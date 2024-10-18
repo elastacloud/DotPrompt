@@ -39,5 +39,9 @@
   <ItemGroup>
     <None Include="Docs\README.md" Pack="true" PackagePath=""/>
   </ItemGroup>
+  
+  <ItemGroup>
+    <InternalsVisibleTo Include="DotPrompt.Tests" />
+  </ItemGroup>
 
 </Project>
