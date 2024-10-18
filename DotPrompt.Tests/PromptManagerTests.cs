@@ -45,7 +45,7 @@ public class PromptManagerTests
     {
         var manager = new PromptManager();
 
-        var expectedPromptFile = PromptFile.FromFile("prompts/basic.prompt");
+        var expectedPromptFile = PromptFile.FromFile("prompts/BASIC.PROMPT");
         
         Assert.Equivalent(manager.GetPromptFile("basic"), expectedPromptFile, strict: true);
     }
