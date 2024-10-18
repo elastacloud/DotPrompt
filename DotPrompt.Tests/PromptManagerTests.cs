@@ -60,13 +60,4 @@ public class PromptManagerTests
         var exception = Assert.Throws<DotPromptException>(act);
         Assert.Equal("No prompt file with that name has been loaded", exception.Message);
     }
-
-    [Fact]
-    public void FilePromptStore_WithInvalidPathSpecified_ThrowsException()
-    {
-        var act = () => new FilePromptStore("does-not-exist");
-
-        var exception = Assert.Throws<ArgumentException>(act);
-        Assert.Contains("The specified path does not exist", exception.Message);
-    }
 }

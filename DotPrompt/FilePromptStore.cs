@@ -13,7 +13,7 @@ public class FilePromptStore : IPromptStore
     /// <summary>
     /// Holds the location selected by the client to manage prompt files from
     /// </summary>
-    private readonly DirectoryInfo _promptDirectory;
+    internal readonly DirectoryInfo PromptDirectory;
     
     /// <summary>
     /// Creates a new instance of the <see cref="FilePromptStore"/> using the default location
@@ -30,9 +30,9 @@ public class FilePromptStore : IPromptStore
     /// <exception cref="ArgumentException">Thrown if the specified location does not exist</exception>
     public FilePromptStore(string path)
     {
-        _promptDirectory = new DirectoryInfo(path);
+        PromptDirectory = new DirectoryInfo(path);
 
-        if (!_promptDirectory.Exists)
+        if (!PromptDirectory.Exists)
         {
             throw new ArgumentException("The specified path does not exist", nameof(path));
         }
@@ -53,7 +53,7 @@ public class FilePromptStore : IPromptStore
             IgnoreInaccessible = true
         };
 
-        foreach (var file in _promptDirectory.EnumerateFiles("*.prompt", options))
+        foreach (var file in PromptDirectory.EnumerateFiles("*.prompt", options))
         {
             var promptFile = PromptFile.FromFile(file.FullName);
             yield return promptFile;
