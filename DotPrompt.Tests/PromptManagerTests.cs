@@ -18,7 +18,8 @@ public class PromptManagerTests
     [Fact]
     public void PromptManager_WithPathSpecified_LoadsPromptsFromSpecifiedLocation()
     {
-        var manager = new PromptManager("manager-prompts");
+        var promptStore = new FilePromptStore("manager-prompts");
+        var manager = new PromptManager(promptStore);
 
         var expectedPrompts = new List<string> { "basic", "example-with-name" };
         var actualPrompts = manager.ListPromptFileNames().ToList();
@@ -29,18 +30,10 @@ public class PromptManagerTests
     }
 
     [Fact]
-    public void PromptManager_WithInvalidPathSpecified_ThrowsException()
-    {
-        var act = () => new PromptManager("does-not-exist");
-
-        var exception = Assert.Throws<ArgumentException>(act);
-        Assert.Contains("The specified path does not exist", exception.Message);
-    }
-
-    [Fact]
     public void PromptManager_WithDuplicateNames_ThrowsException()
     {
-        var act = () => new PromptManager("duplicate-name-prompts");
+        var promptStore = new FilePromptStore("duplicate-name-prompts");
+        var act = () => new PromptManager(promptStore);
 
         var exception = Assert.Throws<DotPromptException>(act);
 
@@ -66,5 +59,14 @@ public class PromptManagerTests
 
         var exception = Assert.Throws<DotPromptException>(act);
         Assert.Equal("No prompt file with that name has been loaded", exception.Message);
+    }
+
+    [Fact]
+    public void FilePromptStore_WithInvalidPathSpecified_ThrowsException()
+    {
+        var act = () => new FilePromptStore("does-not-exist");
+
+        var exception = Assert.Throws<ArgumentException>(act);
+        Assert.Contains("The specified path does not exist", exception.Message);
     }
 }

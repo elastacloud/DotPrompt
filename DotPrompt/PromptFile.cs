@@ -10,7 +10,7 @@ namespace DotPrompt;
 /// <summary>
 /// Represents the content of a .prompt file
 /// </summary>
-public class PromptFile
+public partial class PromptFile
 {
     /// <summary>
     /// Provides a collection of valid data types which can be accepted in prompt files
@@ -264,8 +264,8 @@ public class PromptFile
     /// <returns>The cleaned name, with invalid characters removed and whitespace normalised to dashes</returns>
     private static string CleanName(string name)
     {
-        var invalidCharsRegex = new Regex(@"([^A-Za-z0-9 \r\n]*)", RegexOptions.Compiled | RegexOptions.Multiline);
-        var multipleSpacesRegex = new Regex(@"[\s\r\n]+", RegexOptions.Compiled | RegexOptions.Multiline);
+        var invalidCharsRegex = InvalidCharactersRegex();
+        var multipleSpacesRegex = MultipleSpacesRegex();
 
         var strippedName = invalidCharsRegex.Replace(name, "");
         var trimmedName = multipleSpacesRegex.Replace(strippedName, "-")
@@ -274,4 +274,10 @@ public class PromptFile
         
         return trimmedName;
     }
+
+    [GeneratedRegex(@"([^A-Za-z0-9 \r\n]*)", RegexOptions.Multiline | RegexOptions.Compiled)]
+    private static partial Regex InvalidCharactersRegex();
+    
+    [GeneratedRegex(@"[\s\r\n]+", RegexOptions.Multiline | RegexOptions.Compiled)]
+    private static partial Regex MultipleSpacesRegex();
 }

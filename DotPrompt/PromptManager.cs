@@ -7,43 +7,25 @@ namespace DotPrompt;
 /// </summary>
 public class PromptManager
 {
-    private const string DefaultPath = "prompts";
-
     private readonly ConcurrentDictionary<string, PromptFile> _promptFiles = new();
-
+    
     /// <summary>
-    /// Creates a new instance of the <see cref="PromptManager"/> which uses the default "prompts" directory
+    /// Creates a new instance of the <see cref="PromptManager"/> using a default instance of the
+    /// <see cref="FilePromptStore"/>
     /// </summary>
-    public PromptManager() : this(DefaultPath) { }
+    public PromptManager() : this(new FilePromptStore()) { }
 
     /// <summary>
     /// Creates a new instance of the <see cref="PromptManager"/> class which loads the .prompt files from a
     /// specified directory.
     /// </summary>
-    public PromptManager(string path)
+    public PromptManager(IPromptStore promptStore)
     {
-        var promptDirectory = new DirectoryInfo(path);
-
-        if (!promptDirectory.Exists)
+        foreach (var promptFile in promptStore.Load())
         {
-            throw new ArgumentException("The specified path does not exist", nameof(path));
-        }
-
-        var options = new EnumerationOptions
-        {
-            MatchCasing = MatchCasing.CaseInsensitive,
-            RecurseSubdirectories = true,
-            ReturnSpecialDirectories = false,
-            IgnoreInaccessible = true
-        };
-
-        foreach (var file in promptDirectory.EnumerateFiles("*.prompt", options))
-        {
-            var promptFile = PromptFile.FromFile(file.FullName);
-
             if (!_promptFiles.TryAdd(promptFile.Name, promptFile))
             {
-                throw new DotPromptException($"Unable to add prompt file with name '{promptFile.Name}' from path '{file.FullName}' as a duplicate exists");
+                throw new DotPromptException($"Unable to add prompt file with name '{promptFile.Name}' as a duplicate exists");
             }
         }
     }
