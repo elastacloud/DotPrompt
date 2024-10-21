@@ -26,5 +26,12 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
-
+      run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage"
+    - name: Code coverage
+      run: |
+        dotnet tool install --global dotnet-reportgenerator-globaltool
+        reportgenerator -reports:${{runner.workspace}}/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/coverlet/reports -reporttypes:'Cobertura'
+    - name: Upload results to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}

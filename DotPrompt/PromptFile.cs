@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
 using Fluid;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
@@ -8,7 +10,7 @@ namespace DotPrompt;
 /// <summary>
 /// Represents the content of a .prompt file
 /// </summary>
-public class PromptFile
+public partial class PromptFile
 {
     /// <summary>
     /// Provides a collection of valid data types which can be accepted in prompt files
@@ -104,6 +106,14 @@ public class PromptFile
         if (string.IsNullOrEmpty(promptFile.Name))
         {
             promptFile.Name = name;
+        }
+        
+        // Ensure the name conforms to standards
+        var originalName = promptFile.Name;
+        promptFile.Name = CleanName(promptFile.Name);
+        if (string.IsNullOrEmpty(promptFile.Name))
+        {
+            throw new DotPromptException($"The provided name '{originalName}' once cleaned results in an empty string");
         }
         
         // Check the data types of the parameters
@@ -246,4 +256,28 @@ public class PromptFile
 
         return clonedValues;
     }
+
+    /// <summary>
+    /// Cleans the given name by removing invalid characters and normalising whitespace
+    /// </summary>
+    /// <param name="name">The name to be cleaned</param>
+    /// <returns>The cleaned name, with invalid characters removed and whitespace normalised to dashes</returns>
+    private static string CleanName(string name)
+    {
+        var invalidCharsRegex = InvalidCharactersRegex();
+        var multipleSpacesRegex = MultipleSpacesRegex();
+
+        var strippedName = invalidCharsRegex.Replace(name, "");
+        var trimmedName = multipleSpacesRegex.Replace(strippedName, "-")
+            .Trim('-')
+            .ToLower(CultureInfo.InvariantCulture);
+        
+        return trimmedName;
+    }
+
+    [GeneratedRegex(@"([^A-Za-z0-9 \r\n]*)", RegexOptions.Multiline | RegexOptions.Compiled)]
+    private static partial Regex InvalidCharactersRegex();
+    
+    [GeneratedRegex(@"[\s\r\n]+", RegexOptions.Multiline | RegexOptions.Compiled)]
+    private static partial Regex MultipleSpacesRegex();
 }

@@ -14,7 +14,7 @@
     <RepositoryUrl>https://github.com/elastacloud/DotPrompt</RepositoryUrl>
     <PackageOutputPath>./nupkg</PackageOutputPath>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <LangVersion>default</LangVersion>
     <NoWarn>NU1702</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -26,18 +26,13 @@
     <PackageReference Include="YamlDotNet" Version="16.1.3" />
   </ItemGroup>
   
-  <Target Name="CopyPackageReadme" BeforeTargets="Build">
-    <Message Text="Copying README.md to project path for packaging" Importance="high"/>
-    <Copy SourceFiles="../README.md" DestinationFolder="$(ProjectDir)/Docs"/>
-  </Target>
-  
-  <Target Name="CleanCopiedResources" BeforeTargets="Clean">
-    <Message Text="Removing files copied for packaging"/>
-    <RemoveDir Directories="$(ProjectDir)/Docs"/>
-  </Target>
+  <ItemGroup>
+    <None Include="../README.md" Pack="true" PackagePath="" />
+    <None Include="../LICENSE.txt" Pack="true" PackagePath="" />
+  </ItemGroup>
   
   <ItemGroup>
-    <None Include="Docs\README.md" Pack="true" PackagePath=""/>
+    <InternalsVisibleTo Include="DotPrompt.Tests" />
   </ItemGroup>
 
 </Project>
