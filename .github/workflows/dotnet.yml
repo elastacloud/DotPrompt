@@ -27,4 +27,7 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
-
+    - name: Code coverage
+      run: |
+        dotnet tool install --global dotnet-reportgenerator-globaltool
+        reportgenerator -reports:${{runner.workspace}}/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/coverlet/reports -reporttypes:'Cobertura'
