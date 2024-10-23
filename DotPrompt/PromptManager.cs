@@ -5,7 +5,7 @@ namespace DotPrompt;
 /// <summary>
 /// Manages loading and accessing of .prompt files from a specified directory.
 /// </summary>
-public class PromptManager
+public class PromptManager : IPromptManager
 {
     private readonly ConcurrentDictionary<string, PromptFile> _promptFiles = new();
     
