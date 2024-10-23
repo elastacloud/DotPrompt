@@ -47,6 +47,8 @@ fewShots:
 
 The `name` is optional in the configuration, if it's not provided then the name is taken from the file name minus the extension. So a file called `gen-lookup-code.prompt` would get the name `gen-lookup-code`. This doesn't play a role in the generation of the prompts themselves (though future updates might), but allows you to identify the prompt source when logging.
 
+If you use this property then when the file is loaded the name is converted to lowercase and spaces are replaced with hyphens. So a name of `My cool Prompt` would become `my-cool-prompt`. This is done to make sure the name is easily accessible from the code.
+
 The `config` section has some top level items which are provided for the client to use in their LLM calls to set options on each call. The `outputFormat` property takes a value of either `text` or `json` depending on how the LLM is intended to respond to the request. If specifying `json` then some LLMs require either the system or user prompt to state that the expected output is JSON as well. If the library does not detect the term `JSON` in the prompt then it will append a small statement to the system prompt requesting for the response to be in JSON format.
 
 The `input` section is related to the `prompts` section, so I will cover them both at the same time.
@@ -95,9 +97,11 @@ example: |
 
 The above-referenced article provides a good explanation of how to work with multiline strings, including the use of _chomp indicators_ which define how newline characters should be handled.
 
-## Example
+## Examples
 
-The overall solution can then be used in this way.
+### Loading a prompt file directly
+
+Prompt files can be accessed directly. If you have only a couple of files or want to quickly test them out then this is a fairly simple way of doing so.
 
 ```csharp
 using DotPrompt;
@@ -137,6 +141,34 @@ This might result in a response from the LLM which looks like this (sorry)
 
 Parsing a prompt does not produce a finalised version of the parsed template, it can be produced multiple times with different values each time. All together this would look something like below.
 
+### Using the Prompt Manager
+
+The prompt manager is the preferred method for handling your prompt files. It allows you to load them from a location, access then by name, and then use them in your application.
+
+The default for the prompt manager is to access files in the local `prompts` folder, though you can specify a different path if you want to.
+
+```csharp
+// Load from the default location of the `prompts` directory
+var promptManager = new PromptManager();
+var promptFile = promptManager.GetPromptFile("example");
+
+// Use a different folder
+var filePromptStore = new FilePromptStore("another-location");
+var promptManager = new PromptManager(filePromptStore);
+
+var promptFile = promptManager.GetPromptFile("example");
+```
+
+The prompt manager implements an `IPromptManager` interface, and so if you want to use this through a DI container, or IoC pattern, then you can easily provide a mocked version for testing.
+
+In the above you can see that the prompt manager is taking a `FilePromptStore` type, this is a class which implements the `IPromptStore` type and comes with the library. But, if you want, you can implement your own version which can read in prompt files from other locations. So if you want to store your prompts in a database, on a cloud-based storage service, or anything else, you can. The prompt manager will call the `Load` method and use it to collect the prompts, then you can continue working as usual.
+
+### Full examples
+
+Using the prompt manager to read a prompt and then use it in a call to an Azure OpenAI endpoint.
+
+_N.B._ This example assumes that there is a `prompts` directory with the prompt file available.
+
 ```csharp
 using System.ClientModel;
 using Azure.AI.OpenAI;
@@ -145,7 +177,8 @@ using DotPrompt;
 var openAiClient = new(new Uri("https://endpoint"), new ApiKeyCredential("abc123"));
 var client = openAiClient.GetChatClient("model");
 
-var promptFile = PromptFile.FromFile("path/to/prompt-file.prompt");
+var promptManager = new PromptManager();
+var promptFile = promptManager.GetPromptFile("example");
 
 // The system prompt and user prompt methods take dictionaries containing the values needed for the
 // template. If none are needed you can simply pass in null.
@@ -181,7 +214,8 @@ using DotPrompt.Extensions.OpenAi;
 var openAiClient = new(new Uri("https://endpoint"), new ApiKeyCredential("abc123"));
 var client = openAiClient.GetChatClient("model");
 
-var promptFile = PromptFile.FromFile("path/to/prompt-file.prompt");
+var promptManager = new PromptManager();
+var promptFile = promptManager.GetPromptFile("example");
 
 var promptValues = new Dictionary<string, object>
 {
@@ -205,7 +239,5 @@ And now, if we need to modify our prompt, we can simply change the prompt file a
 There's still scope for work to do here and some of the items we're looking at include
 
 * Additional configuration options
-* Different prompt stores (and providing an interface so you can define your own)
 * Additional prompting techniques
-* A prompt manager, allowing you to define a single location for your prompts and then using the manager to access the right prompt
-* Open to feedback. Is there something you'd like to see? Let us know
+* Open to feedback. Is there anything you'd like to see? Let us know
