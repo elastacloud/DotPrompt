@@ -176,8 +176,7 @@ var promptManager = new PromptManager();
 var promptFile = promptManager.GetPromptFile("example");
 
 // Use a different folder
-var filePromptStore = new FilePromptStore("another-location");
-var promptManager = new PromptManager(filePromptStore);
+var promptManager = new PromptManager("another-location");
 
 var promptFile = promptManager.GetPromptFile("example");
 
@@ -187,7 +186,7 @@ var promptNames = promptManager.ListPromptFileNames();
 
 The prompt manager implements an `IPromptManager` interface, and so if you want to use this through a DI container, or IoC pattern, then you can easily provide a mocked version for testing.
 
-In the above you can see that the prompt manager is taking a `FilePromptStore` type, this is a class which implements the `IPromptStore` type and comes with the library. But, if you want, you can implement your own version which can read in prompt files from other locations. So if you want to store your prompts in a database, on a cloud-based storage service, or anything else, you can. The prompt manager will call the `Load` method and use it to collect the prompts, then you can continue working as usual.
+The prompt manager can also take an `IPromptStore` instance which allows you to build a custom store which might not be file-based (see [Creating a custom prompt store](#creating-a-custom-prompt-store)). This also allows for providing a mocked interface so you can write unit tests which are not dependent on the storage mechanism.
 
 ### Full examples
 

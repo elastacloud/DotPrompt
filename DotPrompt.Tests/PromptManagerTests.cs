@@ -16,10 +16,23 @@ public class PromptManagerTests
     }
 
     [Fact]
-    public void PromptManager_WithPathSpecified_LoadsPromptsFromSpecifiedLocation()
+    public void PromptManager_WithFilePromptStoreSpecified_LoadsPromptsFromSpecifiedLocation()
     {
         var promptStore = new FilePromptStore("manager-prompts");
         var manager = new PromptManager(promptStore);
+
+        var expectedPrompts = new List<string> { "basic", "example-with-name" };
+        var actualPrompts = manager.ListPromptFileNames().ToList();
+        
+        Assert.Equal(expectedPrompts.Count, actualPrompts.Count);
+        Assert.Contains("basic", actualPrompts);
+        Assert.Contains("example-with-name", actualPrompts);
+    }
+
+    [Fact]
+    public void PromptManager_WithPathSpecified_LoadsPromptsFromSpecifiedLocation()
+    {
+        var manager = new PromptManager("manager-prompts");
 
         var expectedPrompts = new List<string> { "basic", "example-with-name" };
         var actualPrompts = manager.ListPromptFileNames().ToList();

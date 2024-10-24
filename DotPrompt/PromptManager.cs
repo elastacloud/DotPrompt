@@ -14,6 +14,13 @@ public class PromptManager : IPromptManager
     /// <see cref="FilePromptStore"/>
     /// </summary>
     public PromptManager() : this(new FilePromptStore()) { }
+    
+    /// <summary>
+    /// Creates a new instance of the <see cref="PromptManager"/> using the provided path for an
+    /// instance of the <see cref="FilePromptStore"/>
+    /// </summary>
+    /// <param name="path">The path to the directory containing the prompt files</param>
+    public PromptManager(string path) : this(new FilePromptStore(path)) { }
 
     /// <summary>
     /// Creates a new instance of the <see cref="PromptManager"/> class which loads the .prompt files from a
