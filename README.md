@@ -3,18 +3,19 @@
 [![NuGet version](https://badge.fury.io/nu/DotPrompt.svg)](https://badge.fury.io/nu/DotPrompt)
 [![codecov](https://codecov.io/github/elastacloud/DotPrompt/graph/badge.svg?token=hTfjzLIEsM)](https://codecov.io/github/elastacloud/DotPrompt)
 
-A simple library which allows you to build prompts using a configuration-based syntax without needing to embed them into your application. It supports templating for user prompts through the [Fluid](https://github.com/sebastienros/fluid) templating language, meaning you can re-use the same prompt and pass in different values at runtime. The templating language also allows for conditions, so you can change how the prompt is generated based on those variable values.
+DotPrompt is a simple library which allows you to build prompts using a configuration-based syntax, without needing to embed them into your application. It supports templating for prompts through the [Fluid](https://github.com/sebastienros/fluid) templating language, allowing you to re-use the same prompt and pass in different values at runtime.
 
-A prompt file is simply any file ending with a `.prompt` extension. The actual file itself is
-simply a YAML configuration file, the extension allows us to quickly identify the file for its intended purpose.
+A prompt file is simply any file ending with a `.prompt` extension. The actual file itself is a YAML configuration file, and the extension allows the library to quickly identify the file for its intended purpose.
 
 ## Note for JetBrains IDE users
 
 There is a [known issue](https://youtrack.jetbrains.com/issue/IJPL-162378) with `.prompt` files causing unusual behaviour in tools such as Rider and IntelliJ. You can work around this by either disabling the Terminal plug-in or by using a different editor to modify the files.
 
-## The Prompt File
+## The prompt file
 
-A prompt file contents contain some top-level identification properties, followed by configuration information and then finally the prompts. A complete prompt file should look like this.
+A prompt file's contents contain some top-level identification properties, followed by configuration information and then finally the prompts.
+
+A complete prompt file would look like this.
 
 ```yaml
 name: Example
@@ -45,29 +46,47 @@ fewShots:
     response: AI is used in virtual assistants like Siri and Alexa, which understand and respond to voice commands.
 ```
 
-The `name` is optional in the configuration, if it's not provided then the name is taken from the file name minus the extension. So a file called `gen-lookup-code.prompt` would get the name `gen-lookup-code`. This doesn't play a role in the generation of the prompts themselves (though future updates might), but allows you to identify the prompt source when logging.
+### Name
+
+The `name` is optional in the configuration, if it's not provided then the name is taken from the file name minus the extension. So a file called `gen-lookup-code.prompt` would get the name `gen-lookup-code`. This doesn't play a role in the generation of the prompts themselves (though future updates might), but allows you to identify the prompt source when logging, and to select the prompt from the prompt manager.
 
 If you use this property then when the file is loaded the name is converted to lowercase and spaces are replaced with hyphens. So a name of `My cool Prompt` would become `my-cool-prompt`. This is done to make sure the name is easily accessible from the code.
 
+### Config
+
 The `config` section has some top level items which are provided for the client to use in their LLM calls to set options on each call. The `outputFormat` property takes a value of either `text` or `json` depending on how the LLM is intended to respond to the request. If specifying `json` then some LLMs require either the system or user prompt to state that the expected output is JSON as well. If the library does not detect the term `JSON` in the prompt then it will append a small statement to the system prompt requesting for the response to be in JSON format.
 
-The `input` section is related to the `prompts` section, so I will cover them both at the same time.
+### Input
 
-The syntax of the prompts uses the [Fluid](https://github.com/sebastienros/fluid) templating language, which is itself based on [Liquid](https://shopify.github.io/liquid/) created by Shopify. This templating language allows us to define user prompts which can change depending on values being passed into the template parser.
+The `input` section contains details about the parameters being provided to the prompts. These aren't required and you can create prompts which don't have any values being passed in at all. But if you do then these are what you need.
 
-In the example above you can see `{{ topic }}` which is a placeholder for the value being passed in, and will be substituted straight into the template. There is also `{% if style -%} ... {% endif -%}`  which tells the parser to only include this section if the `style` parameter has a value. The `-%}` at the end of marker contains the hyphen symbol which denotes that the parser should collapse the blank lines.
+#### Parameters
 
-There is a great tutorial on writing templates with Fluid available [online](https://deanebarker.net/tech/fluid/).
+Under `input` is the `parameters` section which contains a list of key-value pairs where the key is the name of the parameter, and the value is it's type. If you suffix the parameter name with a question mark (e.g. `style?`) then it is considered to be an optional parameter and will not error if you do not provide a value for it.
 
-Fluid allows for complex objects and custom parsers to be added to it, but for this package it applies only a subset, allowing strings, numbers, and booleans to be supplied as parameters. This is where the `input` section comes in.
+The supported types are:
 
-The `input` section contains two subsections. `parameters` defines the parameters the template expects and what their value types are. If a parameter is denoted with a `?` at the end then it is considered an optional parameter, if the user does not provide a value, then this is allowed. The `default` subsection under `input` allows the prompt writer to specify default values to be used if values are not provided by the user.
+* string
+* bool
+* datetime
+* number
+* object
 
-If a user does not provide a value for a non-optional parameter, and a default does not exist, then this is considered an error and is reported as such.
+The first 4 are used as provided. Objects which are passed to the prompt will have their `ToString` method called to be used in the prompt.
 
-`fewShots` is a method to allow the prompt writer to provide [few-shot prompting](https://www.promptingguide.ai/techniques/fewshot) techniques to the solution. When constructing a prompt you would include these, along with your system prompt, and then the user prompt, this provides examples on how the LLM should respond to the user prompt. If you're using OpenAI or Azure OpenAI then you can use the extension methods (see later) which will create all the messages for you.
+The `datetime` type can either be displayed with it's default `ToString` representation, or you can use Fluid's filters to specify it's [format](https://deanebarker.net/tech/fluid/filters/misc/#h19), change timezone, and more.
 
-### Tips for multi-line string values in YAML
+If you provide a value for a parameter which does not conform to the type specified then an error would be thrown.
+
+#### Defaults
+
+Also in `input` is the `default` section. This section allows you to specify default values for any of the parameters. So if the parameter is not provided in your application then the default value will be used instead.
+
+### Prompts
+
+The `prompts` section contains the templates for the system and user prompts. Whilst the user prompt is required, you do not need to specify a system prompt.
+
+Both the `system` and `user` prompts are string values and can be defined in any way which YAML supports. The example above is using a multiline string where the carriage returns are preserved.
 
 YAML has great support for multiline string values through [Block Scalars](https://yaml-multiline.info). With these it supports both _literal_ and _folded_ strings. With literal strings the new line characters in the input string are maintained and the string remains exactly as written. With folded the new line characters are collapsed and replaced by a space character, allowing you to write very long strings over multiple lines. Using folded, if you use two new line characters, then a newline is added to the string.
 
@@ -95,7 +114,19 @@ example: |
 # way as bricks don't
 ```
 
-The above-referenced article provides a good explanation of how to work with multiline strings, including the use of _chomp indicators_ which define how newline characters should be handled.
+#### Prompt templates
+
+The syntax of the prompts uses the [Fluid](https://github.com/sebastienros/fluid) templating language, which is itself based on [Liquid](https://shopify.github.io/liquid/) created by Shopify. This templating language allows us to define user prompts which can change depending on values being passed into the template parser.
+
+In the example above you can see `{{ topic }}` which is a placeholder for the value being passed in, and will be substituted straight into the template. There is also the `{% if style -%} ... {% endif -%}` section which tells the parser to only include this section if the `style` parameter has a value. The `-%}` at the end of marker contains the hyphen symbol which tells the parser that it should collapse the blank lines.
+
+There is a great tutorial on writing templates with Fluid available [online](https://deanebarker.net/tech/fluid/).
+
+When you generate the prompt it does not replace the template, only giving you the generated output. This means you can generate the prompt as many times as you want with different input values.
+
+### Few-shot prompting
+
+`fewShots` is a section to allow the prompt writer to provide [few-shot prompting](https://www.promptingguide.ai/techniques/fewshot) techniques to the solution. When constructing a prompt you would include these, along with your system prompt, and then the user prompt, this provides examples on how the LLM should respond to the user prompt. If you're using OpenAI or Azure OpenAI then you can use the extension methods (see later) which will create all the messages for you.
 
 ## Examples
 
@@ -131,15 +162,7 @@ This might result in a response from the LLM which looks like this (sorry)
 
 > Ladies and gentlemen, gather 'round and let me tell you about the miracle of modern technology that's revolutionized the way we connect with our gadgets—I'm talking about Bluetooth! Bluetooth is the unsung hero, the secret sauce that's been making our lives more convenient, more connected, and definitely more high-tech. Picture this: seamless, wire-free communication between your favorite devices. No more tangled cords, no more mess. It's like having a VIP pass to the front row of the future!
 > 
-> Now, imagine strolling through the park, without a care in the world, your favorite tunes playing crystal clear in your ears from those sleek wireless earbuds. That, my friends, is Bluetooth working its magic! Hands-free calls in your car? Check. Syncing your smartphone to your smartwatch? Double check. Connecting all your smart home gadgets for the perfect, automated living experience? Bluetooth's got your back!
-> 
-> But wait, there's more! Bluetooth isn't just for the tech-savvy; it's a game-changer for everyone. Ever tried setting up a complex home audio system or those fancy fitness trackers? Thanks to Bluetooth, it's as easy as pie. With its user-friendly setup, you're ready to go quicker than you can say "wireless wonder."
-> 
-> Now, let's talk about reliability and security—Bluetooth's got it all. Fast, stable connections and advanced encryption mean you can trust your data is safe and sound. Perfect for business, education, and everyday life, Bluetooth is the versatile superstar of wireless communication.
-> 
-> So, folks, don't just stand there, embrace the wireless revolution! With Bluetooth, you're not just keeping up with technology—you're leading the charge. Step into a world of endless possibilities and experience firsthand how this small but mighty technology is making our lives more convenient, more connected, and absolutely fabulous. Be a part of the future, today!`
-
-Parsing a prompt does not produce a finalised version of the parsed template, it can be produced multiple times with different values each time. All together this would look something like below.
+> ...
 
 ### Using the Prompt Manager
 
@@ -157,6 +180,9 @@ var filePromptStore = new FilePromptStore("another-location");
 var promptManager = new PromptManager(filePromptStore);
 
 var promptFile = promptManager.GetPromptFile("example");
+
+// List all of the prompts loaded
+var promptNames = promptManager.ListPromptFileNames();
 ```
 
 The prompt manager implements an `IPromptManager` interface, and so if you want to use this through a DI container, or IoC pattern, then you can easily provide a mocked version for testing.
@@ -233,6 +259,169 @@ Console.WriteLine(response.Content[0].Text);
 ```
 
 And now, if we need to modify our prompt, we can simply change the prompt file and leave our code alone (assuming the parameters don't change).
+
+## Creating a custom prompt store
+
+The above shows how you can use DotPrompt to read prompt files from disk. But what if you have a situation where you want your prompts somewhere more central, like a cloud storage service, or a database? Well The prompt manager can take an `IPromptStore` instance as an argument. In all the examples above it's using the `FilePromptStore` which is included, but you can also build your own. It just needs to implement the interface and you're done.
+
+To give you an example, here's a simple implementation which uses an Azure Storage Table Store to hold the prompt details.
+
+```csharp
+/// <summary>
+/// Implementation of the IPromptStore for Azure Storage Tables
+/// </summary>
+public class AzureTablePromptStore : IPromptStore
+{
+    /// <summary>
+    /// Loads the prompts from the table store
+    /// </summary>
+    public IEnumerable<PromptFile> Load()
+    {
+        var tableClient = GetTableClient();
+        var promptEntities = tableClient.Query<PromptEntity>(e => e.PartitionKey == "DotPromptTest");
+
+        var promptFiles = promptEntities
+            .Select(pe => pe.ToPromptFile())
+            .ToList();
+
+        return promptFiles;
+    }
+
+    /// <summary>
+    /// Gets a table client
+    /// </summary>
+    private static TableClient GetTableClient()
+    {
+        // Replace the configuration items here with your value or switch to using
+        // Entra based authentication
+        var client = new TableServiceClient(
+            new Uri($"https://{Configuration.StorageAccountName}.table.core.windows.net/"),
+            new TableSharedKeyCredential(Configuration.StorageAccountName, Configuration.StorageAccountKey)
+        );
+
+        var tableClient = client.GetTableClient("prompts");
+        tableClient.CreateIfNotExists();
+
+        return tableClient;
+    }
+}
+
+/// <summary>
+/// Represents a record held in the storage table
+/// </summary>
+public class PromptEntity : ITableEntity
+{
+    /// <summary>
+    /// Gets, sets the partition key for the record
+    /// </summary>
+    public string PartitionKey { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Gets, sets the row key for the record
+    /// </summary>
+    public string RowKey { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Gets, sets the timestamp of the entry
+    /// </summary>
+    public DateTimeOffset? Timestamp { get; set; }
+    
+    /// <summary>
+    /// Gets, sets the records ETag value
+    /// </summary>
+    public ETag ETag { get; set; }
+    
+    /// <summary>
+    /// Gets, sets the output format
+    /// </summary>
+    public string OutputFormat { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Gets, sets the maximum number of tokens
+    /// </summary>
+    public int MaxTokens { get; set; }
+    
+    /// <summary>
+    /// Gets, sets the parameter information which is held as a JSON string value
+    /// </summary>
+    public string Parameters { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Gets, sets the default values which are held as a JSON string value
+    /// </summary>
+    public string Default { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Gets, sets the system prompt template
+    /// </summary>
+    public string SystemPrompt { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Gets, sets the user prompt template
+    /// </summary>
+    public string UserPrompt { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Returns the prompt entity record into a <see cref="PromptFile"/> instance
+    /// </summary>
+    /// <returns></returns>
+    public PromptFile ToPromptFile()
+    {
+        var parameters = new Dictionary<string, string>();
+        var defaults = new Dictionary<string, object>();
+        
+        // If there are parameter values then convert them into a dictionary
+        if (!string.IsNullOrEmpty(Parameters))
+        {
+            var entityParameters = (JsonObject)JsonNode.Parse(Parameters)!;
+            foreach (var (prop, propType) in entityParameters)
+            {
+                parameters.Add(prop, propType?.AsValue().ToString() ?? string.Empty);
+            }
+        }
+
+        // If there are default values then convert them into a dictionary
+        if (!string.IsNullOrEmpty(Default))
+        {
+            var entityDefaults = (JsonObject)JsonNode.Parse(Default)!;
+            foreach (var (prop, defaultValue) in entityDefaults)
+            {
+                defaults.Add(prop, defaultValue?.AsValue().GetValue<object>() ?? string.Empty);
+            }
+        }
+        
+        // Generate the new prompt file
+        var promptFile = new PromptFile
+        {
+            Name = RowKey,
+            Config = new PromptConfig
+            {
+                OutputFormat = Enum.Parse<OutputFormat>(OutputFormat, true),
+                MaxTokens = MaxTokens,
+                Input = new InputSchema
+                {
+                    Parameters = parameters,
+                    Default = defaults
+                }
+            },
+            Prompts = new Prompts
+            {
+                System = SystemPrompt,
+                User = UserPrompt
+            }
+        };
+
+        return promptFile;
+    }
+}
+```
+
+And then to use this we would do the following
+
+```csharp
+var promptManager = new PromptManager(new AzureTablePromptStore());
+var promptFile = promptManager.GetPromptFile("example");
+```
 
 ## Upcoming features
 
