@@ -275,7 +275,7 @@ public partial class PromptFile
         return trimmedName;
     }
 
-    [GeneratedRegex(@"([^A-Za-z0-9 \r\n]*)", RegexOptions.Multiline | RegexOptions.Compiled)]
+    [GeneratedRegex(@"([^A-Za-z0-9 \-\r\n]*)", RegexOptions.Multiline | RegexOptions.Compiled)]
     private static partial Regex InvalidCharactersRegex();
     
     [GeneratedRegex(@"[\s\r\n]+", RegexOptions.Multiline | RegexOptions.Compiled)]
