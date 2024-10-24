@@ -178,9 +178,9 @@ public class PromptFileTests
         using var ms = new MemoryStream(Encoding.UTF8.GetBytes(content));
         ms.Seek(0, SeekOrigin.Begin);
 
-        var promptFile = PromptFile.FromStream("clean\r\n\r\nthis name", ms);
+        var promptFile = PromptFile.FromStream(inputName, ms);
 
-        Assert.Equal("clean-this-name", promptFile.Name);
+        Assert.Equal(expectedName, promptFile.Name);
     }
 
     [Fact]
