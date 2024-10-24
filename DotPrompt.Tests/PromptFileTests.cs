@@ -167,8 +167,12 @@ public class PromptFileTests
         Assert.Contains("Stream is not in a readable state", exception.Message);
     }
 
-    [Fact]
-    public void FromStream_WithInvalidCharactersInNameForWindows_CleansTheName()
+    [Theory]
+    [InlineData("clean\r\n\r\nthis name", "clean-this-name")]
+    [InlineData("do-not-clean", "do-not-clean")]
+    [InlineData("My COOL nAMe", "my-cool-name")]
+    [InlineData("this <is .pretty> un*cl()ean", "this-is-pretty-unclean")]
+    public void FromStream_WithNamePart_CleansTheName(string inputName, string expectedName)
     {
         const string content = "prompts:\n  system: System prompt\n  user: User prompt";
         using var ms = new MemoryStream(Encoding.UTF8.GetBytes(content));
