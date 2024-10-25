@@ -66,11 +66,13 @@ Under `input` is the `parameters` section which contains a list of key-value pai
 
 The supported types are:
 
-* string
-* bool
-* datetime
-* number
-* object
+| Parameter Type | Dotnet Type                                                                                                                                                                                  | C# Equivalent                                                                                            |
+|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
+| string         | System.String                                                                                                                                                                                | string                                                                                                   |
+| bool           | System.Boolean                                                                                                                                                                               | bool                                                                                                     |
+| datetime       | System.DateTimeOffset                                                                                                                                                                        | System.DateTimeOffset                                                                                    |
+| number         | System.Byte<br/>System.SByte<br/>System.UInt16<br/>System.Int16<br/>System.UInt32<br/>System.Int32<br/>System.UInt64<br/>System.Int64<br/>System.Single<br/>System.Double<br/>System.Decimal | byte<br/>sbyte<br/>ushort<br/>short<br/>uint<br/>int<br/>ulong<br/>long<br/>float<br/>double<br/>decimal |
+| object         | System.Object                                                                                                                                                                                | object                                                                                                   |
 
 The first 4 are used as provided. Objects which are passed to the prompt will have their `ToString` method called to be used in the prompt.
 
