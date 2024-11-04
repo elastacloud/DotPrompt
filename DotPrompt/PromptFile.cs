@@ -21,6 +21,11 @@ public partial class PromptFile
     /// Gets, sets the name of the prompt
     /// </summary>
     public required string Name { get; set; }
+    
+    /// <summary>
+    /// Gets, sets the name of the model (or deployment) the prompt should be executed using
+    /// </summary>
+    public string? Model { get; set; }
 
     /// <summary>
     /// Gets, sets the configuration to use for the prompt
