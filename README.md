@@ -19,6 +19,7 @@ A complete prompt file would look like this.
 
 ```yaml
 name: Example
+model: gpt-4o
 config:
   outputFormat: text
   temperature: 0.9
@@ -51,6 +52,16 @@ fewShots:
 The `name` is optional in the configuration, if it's not provided then the name is taken from the file name minus the extension. So a file called `gen-lookup-code.prompt` would get the name `gen-lookup-code`. This doesn't play a role in the generation of the prompts themselves (though future updates might), but allows you to identify the prompt source when logging, and to select the prompt from the prompt manager.
 
 If you use this property then when the file is loaded the name is converted to lowercase and spaces are replaced with hyphens. So a name of `My cool Prompt` would become `my-cool-prompt`. This is done to make sure the name is easily accessible from the code.
+
+### Model
+
+This is another optional item in the configuration, but it provides information to the user of the prompt file which model (or deployment for Azure Open AI) it should use. As this can be null if not specified this the consumer should make sure to check before usage. For example:
+
+```csharp
+var model = promptFile.Model ?? "my-default";
+```
+
+Using this option though allows the prompt engineer to be very explicit about which model they intended to be used to provide the best results.
 
 ### Config
 
@@ -202,7 +213,6 @@ using Azure.AI.OpenAI;
 using DotPrompt;
 
 var openAiClient = new(new Uri("https://endpoint"), new ApiKeyCredential("abc123"));
-var client = openAiClient.GetChatClient("model");
 
 var promptManager = new PromptManager();
 var promptFile = promptManager.GetPromptFile("example");
@@ -215,6 +225,8 @@ var userPrompt = promptFile.GetUserPrompt(new Dictionary<string, object>
     { "topic", "bluetooth" },
     { "style", "used car salesman" }
 });
+
+var client = openAiClient.GetChatClient(promptFile.Model ?? "default-model");
 
 var completion = await client.CompleteChatAsync(
     [
@@ -239,7 +251,6 @@ using DotPrompt;
 using DotPrompt.Extensions.OpenAi;
 
 var openAiClient = new(new Uri("https://endpoint"), new ApiKeyCredential("abc123"));
-var client = openAiClient.GetChatClient("model");
 
 var promptManager = new PromptManager();
 var promptFile = promptManager.GetPromptFile("example");
@@ -249,6 +260,8 @@ var promptValues = new Dictionary<string, object>
     { "topic", "bluetooth" },
     { "style", "used car salesman" }
 };
+
+var client = openAiClient.GetChatClient(promptFile.Model ?? "default-model");
 
 var completion = await client.CompleteChatAsync(
     promptFile.ToOpenAiChatMessages(promptValues),
@@ -333,6 +346,11 @@ public class PromptEntity : ITableEntity
     public ETag ETag { get; set; }
     
     /// <summary>
+    /// Gets, sets the model to use
+    /// </summary>
+    public string? Model { get; set; }
+    
+    /// <summary>
     /// Gets, sets the output format
     /// </summary>
     public string OutputFormat { get; set; } = string.Empty;
@@ -395,6 +413,7 @@ public class PromptEntity : ITableEntity
         var promptFile = new PromptFile
         {
             Name = RowKey,
+            Model = Model,
             Config = new PromptConfig
             {
                 OutputFormat = Enum.Parse<OutputFormat>(OutputFormat, true),
