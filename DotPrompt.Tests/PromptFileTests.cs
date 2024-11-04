@@ -22,6 +22,9 @@ public class PromptFileTests
         
         Assert.Equal("basic", promptFile.Name);
         
+        Assert.NotNull(promptFile.Model);
+        Assert.Equal("claude-3-5-sonnet-latest", promptFile.Model);
+        
         Assert.NotNull(promptFile.Config);
         Assert.Equal(OutputFormat.Text, promptFile.Config.OutputFormat);
         Assert.Equal(500, promptFile.Config.MaxTokens);
@@ -194,6 +197,19 @@ public class PromptFileTests
 
         var exception = Assert.Throws<DotPromptException>(act);
         Assert.Contains("once cleaned results in an empty string", exception.Message);
+    }
+
+    [Fact]
+    public void FromStream_WithMissingModelName_IsPersistedAsNullValue()
+    {
+        const string content = "name: missing-model\nmodel: \nprompts:\n  system: System prompt\n  user: User prompt";
+        using var ms = new MemoryStream(Encoding.UTF8.GetBytes(content));
+        ms.Seek(0, SeekOrigin.Begin);
+
+        var promptFile = PromptFile.FromStream("", ms);
+        
+        Assert.Equal("missing-model", promptFile.Name);
+        Assert.Null(promptFile.Model);
     }
 
     [Fact]
