@@ -59,4 +59,25 @@ public class FilePromptStore : IPromptStore
             yield return promptFile;
         }
     }
+
+    /// <summary>
+    /// Saves a <see cref="PromptFile"/> to the specified location.
+    /// </summary>
+    /// <param name="promptFile">The prompt file to save.</param>
+    /// <param name="name">The name to save the prompt as</param>
+    public void Save(PromptFile promptFile, string? name = null)
+    {
+        if (string.IsNullOrEmpty(name))
+        {
+            name = promptFile.Name;
+        }
+
+        if (name.EndsWith(".prompt", StringComparison.OrdinalIgnoreCase))
+        {
+            name = name.Replace(".prompt", "", StringComparison.OrdinalIgnoreCase);
+        }
+
+        var outputFile = new FileInfo(Path.Join(PromptDirectory.FullName, $"{name}.prompt"));
+        promptFile.ToFile(outputFile.FullName);
+    }
 }
