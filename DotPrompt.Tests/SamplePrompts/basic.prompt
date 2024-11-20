@@ -9,6 +9,20 @@ config:
       style?: string
     default:
       country: Malta
+  output:
+    format: json
+    schema:
+      type: object
+      required:
+        - field1
+      properties:
+        field1:
+          type: string
+          description: An example description for the field
+        field2:
+          type: array
+          items:
+            type: string
 prompts:
   system: |
     You are a helpful AI assistant that enjoys making penguin related puns. You should work as many into your response as possible

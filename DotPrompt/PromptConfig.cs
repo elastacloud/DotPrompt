@@ -14,6 +14,11 @@ public class PromptConfig
     /// Gets, sets the format for the response from the model
     /// </summary>
     public OutputFormat OutputFormat { get; set; } = OutputFormat.Text;
+
+    /// <summary>
+    /// Gets or sets the output configuration for the prompt.
+    /// </summary>
+    public Output? Output { get; set; }
     
     /// <summary>
     /// Gets, sets the optional temperature value for the model

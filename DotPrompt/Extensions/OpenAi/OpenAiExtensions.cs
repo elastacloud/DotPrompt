@@ -45,11 +45,23 @@ public static class OpenAiExtensions
     /// <returns>A <see cref="ChatCompletionOptions"/> object configured based on the <see cref="PromptFile"/> instance.</returns>
     public static ChatCompletionOptions ToOpenAiChatCompletionOptions(this PromptFile promptFile)
     {
+        var chatResponseFormat = promptFile.Config.OutputFormat switch
+        {
+            OutputFormat.Text => ChatResponseFormat.CreateTextFormat(),
+            OutputFormat.Json => ChatResponseFormat.CreateJsonObjectFormat(),
+            OutputFormat.JsonSchema when promptFile.Config.Output?.Schema is not null =>
+                ChatResponseFormat.CreateJsonSchemaFormat(
+                    promptFile.Name,
+                    BinaryData.FromString(promptFile.Config.Output.ToSchemaDocument()),
+                    jsonSchemaIsStrict: true),
+            OutputFormat.JsonSchema when promptFile.Config.Output?.Schema is null =>
+                throw new DotPromptException("A valid schema was not provided to be used with the JsonSchema response type"),
+            _ => throw new DotPromptException("The requested output format is not available")
+        };
+        
         var chatCompletionOptions = new ChatCompletionOptions
         {
-            ResponseFormat = promptFile.Config.OutputFormat == OutputFormat.Json
-                ? ChatResponseFormat.CreateJsonObjectFormat()
-                : ChatResponseFormat.CreateTextFormat()
+            ResponseFormat = chatResponseFormat
         };
 
         if (promptFile.Config.Temperature is not null)

@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Fluid;
+using Json.Schema;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -111,6 +112,27 @@ public partial class PromptFile
         if (string.IsNullOrEmpty(promptFile.Name))
         {
             promptFile.Name = name;
+        }
+
+        // If the prompt output configuration is null then create a new one and set the output format. This is to handle
+        // instances where the output format is slightly older and is set at the top level
+        promptFile.Config.Output ??= new Output
+        {
+            Format = promptFile.Config.OutputFormat
+        };
+
+        // If an output schema has been defined then check to make sure it generates a valid JSON schema
+        if (promptFile.Config.Output.Schema is not null)
+        {
+            try
+            {
+                JsonSchema.FromText(promptFile.Config.Output.ToSchemaDocument());
+            }
+            catch (Exception e)
+            {
+                throw new DotPromptException("Invalid output schema specified", e);
+            }
+            
         }
         
         // Ensure the name conforms to standards
