@@ -120,6 +120,9 @@ public partial class PromptFile
         {
             Format = promptFile.Config.OutputFormat
         };
+        
+        // Ensure the config output format and the config.output format are the same
+        promptFile.Config.OutputFormat = promptFile.Config.Output.Format;
 
         // If an output schema has been defined then check to make sure it generates a valid JSON schema
         if (promptFile.Config.Output.Schema is not null)

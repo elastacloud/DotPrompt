@@ -10,7 +10,7 @@ config:
     default:
       country: Malta
   output:
-    format: json
+    format: text
     schema:
       type: object
       required:
