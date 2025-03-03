@@ -1,11 +1,13 @@
 using System.Text.Json;
 using DotPrompt;
 
+namespace DotPrompt.Tests;
+
 public class OutputTests
 {
     [Theory]
     [InlineData(null, "")]
-    [InlineData("{}", "{\"additionalProperties\": false}")]
+    [InlineData("{}", "{\"additionalProperties\":false}")]
     [InlineData("{\"additionalProperties\":true}", "{\"additionalProperties\":true}")]
     public void ToSchemaDocument_VariousScenarios_ReturnsExpectedResult(string schemaJson, string expectedJson)
     {
@@ -14,8 +16,8 @@ public class OutputTests
 
         if (schemaJson != null)
         {
-            var schema = JsonSerializer.Deserialize<JsonElement>(schemaJson);
-            output.Schema = schema;
+            var schema = JsonDocument.Parse(schemaJson);
+            output.Schema = schema.Deserialize<Dictionary<string, object>>();
         }
 
         // Act

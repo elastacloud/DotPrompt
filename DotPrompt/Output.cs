@@ -31,16 +31,21 @@ public class Output
     /// </returns>
     public string ToSchemaDocument()
     {
-        if (_schemaDocument is null && Schema is not null)
+        if (_schemaDocument is not null) return _schemaDocument;
+        if (Schema is null) return string.Empty;
+        
+        var schemaObject = JsonDocument.Parse(JsonSerializer.Serialize(Schema));
+            
+        if (!schemaObject.RootElement.TryGetProperty("additionalProperties", out _))
         {
-            var schemaObject = JsonSerializer.SerializeToDocument(Schema);
-            if (!schemaObject.RootElement.TryGetProperty("additionalProperties", out _))
-            {
-                var rootNode = schemaObject.RootElement.AsNode();
-                rootNode!["additionalProperties"] = false;
+            var rootNode = schemaObject.RootElement.AsNode();
+            rootNode!["additionalProperties"] = false;
 
-                _schemaDocument = rootNode.ToJsonString();
-            }
+            _schemaDocument = rootNode.ToJsonString();
+        }
+        else
+        {
+            _schemaDocument = schemaObject.RootElement.ToJsonString();
         }
 
         return _schemaDocument ?? string.Empty;
