@@ -1,5 +1,4 @@
 using System.Text.Json;
-using DotPrompt;
 
 namespace DotPrompt.Tests;
 
@@ -9,7 +8,7 @@ public class OutputTests
     [InlineData(null, "")]
     [InlineData("{}", "{\"additionalProperties\":false}")]
     [InlineData("{\"additionalProperties\":true}", "{\"additionalProperties\":true}")]
-    public void ToSchemaDocument_VariousScenarios_ReturnsExpectedResult(string schemaJson, string expectedJson)
+    public void ToSchemaDocument_VariousScenarios_ReturnsExpectedResult(string? schemaJson, string expectedJson)
     {
         // Arrange
         var output = new Output();
