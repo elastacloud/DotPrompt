@@ -47,6 +47,24 @@ fewShots:
     response: AI is used in virtual assistants like Siri and Alexa, which understand and respond to voice commands.
 ```
 
+_Note:_ With version 0.0.5 the output format can now be specified in an `output` section. The original configuration remains supported however for backwards compatibility. If both versions are used then the library will use the value specified in the `output` section over the value set in the `config` section.
+
+```yaml
+name: Example
+model: gpt-4o
+config:
+  temperature: 0.9
+  maxTokens: 500
+  input:
+    parameters:
+      topic: string
+      style?: string
+    default:
+      topic: social media
+  output:
+    format: text # Moved here to support JSON schema support which is upcoming
+```
+
 ### Name
 
 The `name` is optional in the configuration, if it's not provided then the name is taken from the file name minus the extension. So a file called `gen-lookup-code.prompt` would get the name `gen-lookup-code`. This doesn't play a role in the generation of the prompts themselves (though future updates might), but allows you to identify the prompt source when logging, and to select the prompt from the prompt manager.
@@ -302,6 +320,18 @@ public class AzureTablePromptStore : IPromptStore
     }
 
     /// <summary>
+    /// Saves a prompt file to the Azure Table Store.
+    /// </summary>
+    /// <param name="promptFile">The prompt file to be saved.</param>
+    /// <param name="name">An optional name associated with the prompt file.</param>
+    public void Save(PromptFile promptFile, string? name)
+    {
+        var promptEntity = PromptEntity.FromPromptFile(promptFile);
+        var tableClient = GetTableClient();
+        tableClient.UpsertEntity(promptEntity);
+    }
+
+    /// <summary>
     /// Gets a table client
     /// </summary>
     private static TableClient GetTableClient()
@@ -432,6 +462,27 @@ public class PromptEntity : ITableEntity
         };
 
         return promptFile;
+    }
+
+    /// <summary>
+    /// Creates a <see cref="PromptEntity"/> instance from a given <see cref="PromptFile"/> object.
+    /// </summary>
+    /// <param name="promptFile">The <see cref="PromptFile"/> instance used to generate the <see cref="PromptEntity"/>.</param>
+    /// <returns>A new instance of <see cref="PromptEntity"/> populated with data from the specified <see cref="PromptFile"/>.</returns>
+    public static PromptEntity FromPromptFile(PromptFile promptFile)
+    {
+        return new PromptEntity
+        {
+            PartitionKey = "DotPromptTest",
+            RowKey = promptFile.Name,
+            Model = promptFile.Model,
+            OutputFormat = Enum.GetName(typeof(OutputFormat), promptFile.Config.OutputFormat)!,
+            MaxTokens = promptFile.Config.MaxTokens ?? 500,
+            Parameters = JsonSerializer.Serialize(promptFile.Config.Input.Parameters),
+            Default = JsonSerializer.Serialize(promptFile.Config.Input.Default),
+            SystemPrompt = promptFile.Prompts?.System ?? string.Empty,
+            UserPrompt = promptFile.Prompts?.User ?? string.Empty,
+        };
     }
 }
 ```
