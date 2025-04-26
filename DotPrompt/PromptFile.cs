@@ -135,7 +135,6 @@ public partial class PromptFile
             {
                 throw new DotPromptException("Invalid output schema specified", e);
             }
-            
         }
         
         // Ensure the name conforms to standards
