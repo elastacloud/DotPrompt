@@ -123,19 +123,6 @@ public partial class PromptFile
         
         // Ensure the config output format and the config.output format are the same
         promptFile.Config.OutputFormat = promptFile.Config.Output.Format;
-
-        // If an output schema has been defined then check to make sure it generates a valid JSON schema
-        if (promptFile.Config.Output.Schema is not null)
-        {
-            try
-            {
-                JsonSchema.FromText(promptFile.Config.Output.ToSchemaDocument());
-            }
-            catch (Exception e)
-            {
-                throw new DotPromptException("Invalid output schema specified", e);
-            }
-        }
         
         // Ensure the name conforms to standards
         var originalName = promptFile.Name;
