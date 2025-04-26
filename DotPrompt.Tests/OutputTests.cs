@@ -25,4 +25,19 @@ public class OutputTests
         // Assert
         Assert.Equal(expectedJson, result);
     }
+
+    [Fact]
+    public void ToSchemaDocument_WhenCalledTwice_ReturnsSameResult()
+    {
+        const string schemaJson = """{"additionalProperties":true}""";
+        var output = new Output
+        {
+            Schema = JsonSerializer.Deserialize<Dictionary<string, object>>(schemaJson)
+        };
+        
+        var result1 = output.ToSchemaDocument();
+        var result2 = output.ToSchemaDocument();
+        
+        Assert.Equal(result1, result2);
+    }
 }

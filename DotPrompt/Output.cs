@@ -48,6 +48,6 @@ public class Output
             _schemaDocument = schemaObject.RootElement.ToJsonString();
         }
 
-        return _schemaDocument ?? string.Empty;
+        return _schemaDocument;
     }
 }
