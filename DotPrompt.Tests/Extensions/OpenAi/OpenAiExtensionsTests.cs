@@ -129,4 +129,23 @@ public class OpenAiExtensionsTests
         var exception = Assert.Throws<DotPromptException>(action);
         Assert.Contains("A valid schema was not provided to be used with the JsonSchema response type", exception.Message);
     }
+    
+    [Fact]
+    public void ToOpenAiChatCompletionOptions_WithInvalidFormat_ThrowsAnException()
+    {
+        // Arrange
+        var promptFileMock = new PromptFile
+        {
+            Name = "test",
+            Config = new PromptConfig
+            {
+                OutputFormat = (OutputFormat)999
+            }
+        };
+
+        // Act & Assert
+        var exception = Assert.Throws<DotPromptException>(() => promptFileMock.ToOpenAiChatCompletionOptions());
+        Assert.Contains("The requested output format is not available", exception.Message);
+    }
+
 }
