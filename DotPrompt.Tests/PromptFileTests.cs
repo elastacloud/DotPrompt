@@ -175,6 +175,7 @@ public class PromptFileTests
     [InlineData("do-not-clean", "do-not-clean")]
     [InlineData("My COOL nAMe", "my-cool-name")]
     [InlineData("this <is .pretty> un*cl()ean", "this-is-pretty-unclean")]
+    [InlineData("    some extra space  ", "some-extra-space")]
     public void FromStream_WithNamePart_CleansTheName(string inputName, string expectedName)
     {
         const string content = "prompts:\n  system: System prompt\n  user: User prompt";
