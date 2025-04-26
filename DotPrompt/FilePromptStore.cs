@@ -67,6 +67,11 @@ public class FilePromptStore : IPromptStore
     /// <param name="name">The name to save the prompt as</param>
     public void Save(PromptFile promptFile, string? name = null)
     {
+        if (string.IsNullOrEmpty(name) && string.IsNullOrEmpty(promptFile.Name))
+        {
+            throw new ArgumentException("A name must be provided for the prompt file");
+        }
+        
         if (string.IsNullOrEmpty(name))
         {
             name = promptFile.Name;

@@ -81,6 +81,20 @@ public class FilePromptStoreTests
 
         Assert.Contains("missing-name-test.prompt", tempFiles);
     }
+    
+    [Fact]
+    public void Save_WhenCalledWithNoValidNameValue_ThrowsException()
+    {
+        using var tempDirectory = new TempDirectory();
+        var originalPromptFile = PromptFile.FromFile("SamplePrompts/basic.prompt");
+        originalPromptFile.Name = string.Empty;
+        
+        var promptStore = new FilePromptStore(tempDirectory.TempPath);
+        var act = () => promptStore.Save(originalPromptFile);
+        
+        var exception = Assert.Throws<ArgumentException>(act);
+        Assert.Contains("A name must be provided for the prompt file", exception.Message);
+    }
 }
 
 public class TempDirectory : IDisposable
