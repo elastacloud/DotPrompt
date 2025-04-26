@@ -129,6 +129,18 @@ public class OpenAiExtensionsTests
         var exception = Assert.Throws<DotPromptException>(action);
         Assert.Contains("A valid schema was not provided to be used with the JsonSchema response type", exception.Message);
     }
+
+    [Fact]
+    public void ToOpenAiChatCompletionOptions_WithEmptyOutput_ThrowsAnException()
+    {
+        var promptFile = PromptFile.FromFile("SamplePrompts/basic-json-format.prompt");
+        promptFile.Config.Output = null;
+        
+        var action = () => promptFile.ToOpenAiChatCompletionOptions();
+        
+        var exception = Assert.Throws<DotPromptException>(action);
+        Assert.Contains("A valid schema was not provided to be used with the JsonSchema response type", exception.Message);
+    }
     
     [Fact]
     public void ToOpenAiChatCompletionOptions_WithInvalidFormat_ThrowsAnException()
@@ -147,5 +159,4 @@ public class OpenAiExtensionsTests
         var exception = Assert.Throws<DotPromptException>(() => promptFileMock.ToOpenAiChatCompletionOptions());
         Assert.Contains("The requested output format is not available", exception.Message);
     }
-
 }
