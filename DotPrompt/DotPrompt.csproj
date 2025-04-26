@@ -14,7 +14,7 @@
     <RepositoryUrl>https://github.com/elastacloud/DotPrompt</RepositoryUrl>
     <PackageOutputPath>./nupkg</PackageOutputPath>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <LangVersion>default</LangVersion>
     <NoWarn>NU1702</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
