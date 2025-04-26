@@ -385,7 +385,7 @@ public class PromptFileTests
             Name = "test"
         };
 
-        var act = () => promptFile.ToStream(null);
+        var act = () => promptFile.ToStream(null!);
 
         Assert.Throws<ArgumentNullException>(act);
     }
