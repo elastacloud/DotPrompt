@@ -31,6 +31,8 @@ public class Output
     /// </returns>
     public string ToSchemaDocument()
     {
+        // TODO: Scan over entire schema document and check for additionalProperties on each item which is an object
+        // see https://openai.com/index/introducing-structured-outputs-in-the-api/
         if (_schemaDocument is not null) return _schemaDocument;
         if (Schema is null) return string.Empty;
         
