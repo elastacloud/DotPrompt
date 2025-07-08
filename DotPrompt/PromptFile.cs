@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Fluid;
+using Json.Schema;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -112,6 +113,16 @@ public partial class PromptFile
         {
             promptFile.Name = name;
         }
+
+        // If the prompt output configuration is null then create a new one and set the output format. This is to handle
+        // instances where the output format is slightly older and is set at the top level
+        promptFile.Config.Output ??= new Output
+        {
+            Format = promptFile.Config.OutputFormat
+        };
+        
+        // Ensure the config output format and the config.output format are the same
+        promptFile.Config.OutputFormat = promptFile.Config.Output.Format;
         
         // Ensure the name conforms to standards
         var originalName = promptFile.Name;
@@ -132,6 +143,46 @@ public partial class PromptFile
         }
         
         return promptFile;
+    }
+
+    /// <summary>
+    /// Serializes the current <see cref="PromptFile"/> instance to the specified output stream.
+    /// </summary>
+    /// <param name="outputStream">The stream to which the <see cref="PromptFile"/> will be serialized</param>
+    /// <exception cref="DotPromptException">Thrown if the output stream is not writable</exception>
+    public void ToStream(Stream outputStream)
+    {
+        ArgumentNullException.ThrowIfNull(outputStream);
+
+        if (!outputStream.CanWrite)
+        {
+            throw new DotPromptException("Unable to use stream as it is not writeable");
+        }
+        
+        var serializer = new SerializerBuilder()
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .WithDefaultScalarStyle(ScalarStyle.Any)
+            .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull | DefaultValuesHandling.OmitEmptyCollections)
+            .Build();
+
+        using var writer = new StreamWriter(outputStream, leaveOpen: true);
+        serializer.Serialize(writer, this, typeof(PromptFile));
+    }
+
+    /// <summary>
+    /// Serializes the current <see cref="PromptFile"/> instance to the specified file path.
+    /// </summary>
+    /// <param name="file">The path to the file where the <see cref="PromptFile"/> will be serialized</param>
+    /// <exception cref="DotPromptException">Thrown if there is an error during file writing</exception>
+    public void ToFile(string file)
+    {
+        using var ms = new MemoryStream();
+        ToStream(ms);
+        
+        ms.Seek(0, SeekOrigin.Begin);
+        
+        using var outputStream = File.Open(file, FileMode.Create, FileAccess.Write, FileShare.None);
+        ms.CopyTo(outputStream);
     }
 
     /// <summary>

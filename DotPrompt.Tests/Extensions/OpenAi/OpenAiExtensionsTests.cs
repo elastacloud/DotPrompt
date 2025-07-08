@@ -96,4 +96,67 @@ public class OpenAiExtensionsTests
         
         Assert.Equivalent(ChatResponseFormat.CreateJsonObjectFormat(), options.ResponseFormat);
     }
+
+    [Fact]
+    public void ToOpenAiChatCompletionOptions_WithJsonSchemaFormat_ReturnsAValidOptionsInstance()
+    {
+        var promptFile = PromptFile.FromFile("SamplePrompts/basic-json-format.prompt");
+        var options = promptFile.ToOpenAiChatCompletionOptions();
+
+        const string expectedSchema = """{"type":"object","required":["field1"],"properties":{"field1":{"type":"string","description":"An example description for the field"},"field2":{"type":"array","items":{"type":"string"}}},"additionalProperties":false}""";
+        
+        var jsonSchemaProperty = options.ResponseFormat.GetType().GetProperty("JsonSchema");
+        var jsonSchemaValue = jsonSchemaProperty!.GetValue(options.ResponseFormat);
+        
+        var schemaProperty = jsonSchemaValue!.GetType().GetProperty("Schema");
+        var schemaValue = schemaProperty!.GetValue(jsonSchemaValue) as BinaryData;
+        
+        var optionsSchema = schemaValue!.ToString();
+        
+        Assert.Equal(expectedSchema, optionsSchema);
+        
+        Assert.Equivalent(ChatResponseFormat.CreateJsonObjectFormat(), options.ResponseFormat);
+    }
+
+    [Fact]
+    public void ToOpenAiChatCompletionOptions_WithEmptySchema_ThrowsAnException()
+    {
+        var promptFile = PromptFile.FromFile("SamplePrompts/basic-json-format.prompt");
+        promptFile.Config.Output!.Schema = null;
+        
+        var action = () => promptFile.ToOpenAiChatCompletionOptions();
+        
+        var exception = Assert.Throws<DotPromptException>(action);
+        Assert.Contains("A valid schema was not provided to be used with the JsonSchema response type", exception.Message);
+    }
+
+    [Fact]
+    public void ToOpenAiChatCompletionOptions_WithEmptyOutput_ThrowsAnException()
+    {
+        var promptFile = PromptFile.FromFile("SamplePrompts/basic-json-format.prompt");
+        promptFile.Config.Output = null;
+        
+        var action = () => promptFile.ToOpenAiChatCompletionOptions();
+        
+        var exception = Assert.Throws<DotPromptException>(action);
+        Assert.Contains("A valid schema was not provided to be used with the JsonSchema response type", exception.Message);
+    }
+    
+    [Fact]
+    public void ToOpenAiChatCompletionOptions_WithInvalidFormat_ThrowsAnException()
+    {
+        // Arrange
+        var promptFileMock = new PromptFile
+        {
+            Name = "test",
+            Config = new PromptConfig
+            {
+                OutputFormat = (OutputFormat)999
+            }
+        };
+
+        // Act & Assert
+        var exception = Assert.Throws<DotPromptException>(() => promptFileMock.ToOpenAiChatCompletionOptions());
+        Assert.Contains("The requested output format is not available", exception.Message);
+    }
 }

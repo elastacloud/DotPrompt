@@ -175,6 +175,7 @@ public class PromptFileTests
     [InlineData("do-not-clean", "do-not-clean")]
     [InlineData("My COOL nAMe", "my-cool-name")]
     [InlineData("this <is .pretty> un*cl()ean", "this-is-pretty-unclean")]
+    [InlineData("    some extra space  ", "some-extra-space")]
     public void FromStream_WithNamePart_CleansTheName(string inputName, string expectedName)
     {
         const string content = "prompts:\n  system: System prompt\n  user: User prompt";
@@ -340,6 +341,71 @@ public class PromptFileTests
         var userPrompt = promptFile.GetUserPrompt(new Dictionary<string, object> { { "param1", value } });
         
         Assert.Equal(expectedPrompt, userPrompt);
+    }
+
+    [Fact]
+    public void ToStream_WithValidInput_ProducesExpectedContent()
+    {
+        var promptFile = new PromptFile
+        {
+            Name = "test",
+            Config = new PromptConfig
+            {
+                MaxTokens = 500,
+                OutputFormat = OutputFormat.Json,
+                Input = new InputSchema
+                {
+                    Parameters = new Dictionary<string, string>
+                    {
+                        { "test?", "string" }
+                    }
+                }
+            },
+            Prompts = new Prompts
+            {
+                System = "system prompt",
+                User = "user prompt"
+            }
+        };
+
+        var expected = "name: test\nconfig:\n  input:\n    parameters:\n      test?: string\n  outputFormat: Json\n  maxTokens: 500\nprompts:\n  system: system prompt\n  user: user prompt\n";
+
+        var ms = new MemoryStream();
+        promptFile.ToStream(ms);
+
+        var actual = Encoding.UTF8.GetString(ms.ToArray());
+        
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void ToStream_WithNoStreamArgument_ThrowsError()
+    {
+        var promptFile = new PromptFile
+        {
+            Name = "test"
+        };
+
+        var act = () => promptFile.ToStream(null!);
+
+        Assert.Throws<ArgumentNullException>(act);
+    }
+
+    [Fact]
+    public void ToStream_WithNonWriteableStream_ThrowsError()
+    {
+        var promptFile = new PromptFile
+        {
+            Name = "test"
+        };
+
+        var ms = new MemoryStream();
+        var stream = new MockStream(ms, true, false);
+
+        var act = () => promptFile.ToStream(stream);
+
+        var exception = Assert.Throws<DotPromptException>(act);
+        Assert.Contains("Unable to use stream as it is not writeable", exception.Message);
     }
 
     public static IEnumerable<object[]> NumericData =>

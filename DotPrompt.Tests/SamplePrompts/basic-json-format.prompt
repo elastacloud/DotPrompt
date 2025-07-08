@@ -1,6 +1,5 @@
 model: claude-3-5-sonnet-latest
 config:
-  outputFormat: text
   temperature: 0.9
   maxTokens: 500
   input:
@@ -10,7 +9,7 @@ config:
     default:
       country: Malta
   output:
-    format: text
+    format: jsonSchema
     schema:
       type: object
       required:

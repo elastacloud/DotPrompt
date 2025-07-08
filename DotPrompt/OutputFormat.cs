@@ -11,7 +11,12 @@ public enum OutputFormat
     Text,
     
     /// <summary>
-    /// Defines that the model should return it's response as a JSON object
+    /// Defines that the model should return its response as a JSON object
     /// </summary>
-    Json
+    Json,
+
+    /// <summary>
+    /// Defines the output format as JSON with a specified schema
+    /// </summary>
+    JsonSchema
 }
