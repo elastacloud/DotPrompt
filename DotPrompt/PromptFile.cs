@@ -24,6 +24,11 @@ public partial class PromptFile
     public required string Name { get; set; }
     
     /// <summary>
+    /// Gets, sets the version of the prompt file.
+    /// </summary>
+    public int Version { get; set; } = 1;
+    
+    /// <summary>
     /// Gets, sets the name of the model (or deployment) the prompt should be executed using
     /// </summary>
     public string? Model { get; set; }
@@ -112,6 +117,12 @@ public partial class PromptFile
         if (string.IsNullOrEmpty(promptFile.Name))
         {
             promptFile.Name = name;
+        }
+        
+        // If the prompt version is negative, then throw an exception
+        if (promptFile.Version < 0)
+        {
+            throw new DotPromptException("The version of the prompt file cannot be negative");
         }
 
         // If the prompt output configuration is null then create a new one and set the output format. This is to handle

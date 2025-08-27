@@ -1,3 +1,4 @@
+using System.Reflection;
 using DotPrompt.Extensions.OpenAi;
 using OpenAI.Chat;
 
@@ -105,13 +106,10 @@ public class OpenAiExtensionsTests
 
         const string expectedSchema = """{"type":"object","required":["field1"],"properties":{"field1":{"type":"string","description":"An example description for the field"},"field2":{"type":"array","items":{"type":"string"}}},"additionalProperties":false}""";
         
-        var jsonSchemaProperty = options.ResponseFormat.GetType().GetProperty("JsonSchema");
-        var jsonSchemaValue = jsonSchemaProperty!.GetValue(options.ResponseFormat);
+        var jsonSchemaValue = GetInternalProperty<object>(options.ResponseFormat, "JsonSchema");
+        var schemaValue = GetInternalProperty<BinaryData>(jsonSchemaValue, "Schema");
         
-        var schemaProperty = jsonSchemaValue!.GetType().GetProperty("Schema");
-        var schemaValue = schemaProperty!.GetValue(jsonSchemaValue) as BinaryData;
-        
-        var optionsSchema = schemaValue!.ToString();
+        var optionsSchema = schemaValue.ToString();
         
         Assert.Equal(expectedSchema, optionsSchema);
         
@@ -158,5 +156,25 @@ public class OpenAiExtensionsTests
         // Act & Assert
         var exception = Assert.Throws<DotPromptException>(() => promptFileMock.ToOpenAiChatCompletionOptions());
         Assert.Contains("The requested output format is not available", exception.Message);
+    }
+    
+    private static T GetInternalProperty<T>(object obj, string propertyName)
+    {
+        var property = obj.GetType().GetProperty(propertyName, 
+            BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+
+        if (property == null)
+        {
+            throw new InvalidOperationException($"Property '{propertyName}' not found on type '{obj.GetType().Name}'");
+        }
+    
+        var value = property.GetValue(obj);
+
+        if (value is T result)
+        {
+            return result;
+        }
+    
+        throw new InvalidOperationException($"Property '{propertyName}' is not of expected type '{typeof(T).Name}'");
     }
 }

@@ -19,6 +19,7 @@ A complete prompt file would look like this.
 
 ```yaml
 name: Example
+version: 1
 model: gpt-4o
 config:
   outputFormat: text
@@ -70,6 +71,10 @@ config:
 The `name` is optional in the configuration, if it's not provided then the name is taken from the file name minus the extension. So a file called `gen-lookup-code.prompt` would get the name `gen-lookup-code`. This doesn't play a role in the generation of the prompts themselves (though future updates might), but allows you to identify the prompt source when logging, and to select the prompt from the prompt manager.
 
 If you use this property then when the file is loaded the name is converted to lowercase and spaces are replaced with hyphens. So a name of `My cool Prompt` would become `my-cool-prompt`. This is done to make sure the name is easily accessible from the code.
+
+### Version
+
+The `version` is optional in the configuration, if it's not provided then the version is set to `1`. This is used to allow you to update the prompt file without breaking existing code. Different versions can be loaded by specifying the version number when loading the prompt file through the prompt manager. If no version is specified then the latest version is loaded.
 
 ### Model
 
@@ -210,6 +215,9 @@ var promptFile = promptManager.GetPromptFile("example");
 var promptManager = new PromptManager("another-location");
 
 var promptFile = promptManager.GetPromptFile("example");
+
+// Loading a specific version
+// var promptFile = promptManager.GetPromptFile("example", 2);
 
 // List all of the prompts loaded
 var promptNames = promptManager.ListPromptFileNames();
