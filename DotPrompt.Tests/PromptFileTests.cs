@@ -213,6 +213,30 @@ public class PromptFileTests
         Assert.Null(promptFile.Model);
     }
 
+    [Theory]
+    [InlineData(int.MinValue, true)]
+    [InlineData(-1, true)]
+    [InlineData(0, false)]
+    [InlineData(1, false)]
+    public void FromStream_WithInvalidVersion_ThrowsAnException(int version, bool throwsException)
+    {
+        var content = $"name: test\nversion: {version}\nprompts:\n  system: System prompt\n  user: User prompt";
+        using var ms = new MemoryStream(Encoding.UTF8.GetBytes(content));
+        ms.Seek(0, SeekOrigin.Begin);
+        
+        var act = () => PromptFile.FromStream("test", ms);
+
+        if (throwsException)
+        {
+            var exception = Assert.Throws<DotPromptException>(act);
+            Assert.Contains("The version of the prompt file cannot be negative", exception.Message);
+        }
+        else
+        {
+            act();
+        }
+    }
+
     [Fact]
     public void GenerateUserPrompt_UsingDefaults_CorrectlyGeneratesPromptFromTemplate()
     {

@@ -84,6 +84,39 @@ public class PromptManagerTests
     }
 
     [Fact]
+    public void PromptManager_WhenRequestedByName_ReturnsLatestVersion()
+    {
+        var manager = new PromptManager("multiple-version-prompts");
+        
+        var expectedPrompt = PromptFile.FromFile("multiple-version-prompts/basic-new.prompt");
+        var actualPrompt = manager.GetPromptFile("basic");
+        
+        Assert.Equivalent(expectedPrompt, actualPrompt, strict: true);
+    }
+
+    [Fact]
+    public void PromptManager_WhenRequestedByNameAndVersion_ReturnsCorrectVersion()
+    {
+        var manager = new PromptManager("multiple-version-prompts");
+        
+        var expectedPrompt = PromptFile.FromFile("multiple-version-prompts/basic.prompt");
+        var actualPrompt = manager.GetPromptFile("basic", 1);
+        
+        Assert.Equivalent(expectedPrompt, actualPrompt, strict: true);
+    }
+    
+    [Fact]
+    public void PromptManager_WhenRequestedByNameAndInvalidVersion_ThrowsException()
+    {
+        var manager = new PromptManager("multiple-version-prompts");
+        
+        var act = () => manager.GetPromptFile("basic", 3);
+        
+        var exception = Assert.Throws<DotPromptException>(act);
+        Assert.Equal("No prompt file with that name and version has been loaded", exception.Message);   
+    }
+
+    [Fact]
     public void GetPromptFile_WhenRequestedWithValidName_LoadsExpectedPromptFile()
     {
         var manager = new PromptManager();
