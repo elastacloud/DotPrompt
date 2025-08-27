@@ -41,6 +41,21 @@ public class PromptManagerTests
         Assert.Contains("basic", actualPrompts);
         Assert.Contains("example-with-name", actualPrompts);
     }
+    
+    [Fact]
+    public void PromptManager_ListPromptFileNamesWithVersions_ReturnsListOfPromptFileNamesAndVersions()
+    {
+        var manager = new PromptManager();
+        
+        var expectedPrompts = new List<string> { "basic:1", "example-with-name:1" };
+        var actualPrompts = manager.ListPromptFileNamesWithVersions().ToList();
+        
+        Assert.Equal(expectedPrompts.Count, actualPrompts.Count);
+        foreach (var expectedPrompt in expectedPrompts)
+        {
+            Assert.Contains(expectedPrompt, actualPrompts);
+        }
+    }
 
     [Fact]
     public void PromptManager_WithDuplicateNames_ThrowsException()

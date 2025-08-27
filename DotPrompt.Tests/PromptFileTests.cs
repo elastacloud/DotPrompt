@@ -368,7 +368,7 @@ public class PromptFileTests
             }
         };
 
-        var expected = "name: test\nconfig:\n  input:\n    parameters:\n      test?: string\n  outputFormat: Json\n  maxTokens: 500\nprompts:\n  system: system prompt\n  user: user prompt\n";
+        const string expected = "name: test\nversion: 1\nconfig:\n  input:\n    parameters:\n      test?: string\n  outputFormat: Json\n  maxTokens: 500\nprompts:\n  system: system prompt\n  user: user prompt\n";
 
         var ms = new MemoryStream();
         promptFile.ToStream(ms);
