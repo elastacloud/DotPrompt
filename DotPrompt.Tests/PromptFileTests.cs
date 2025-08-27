@@ -21,6 +21,7 @@ public class PromptFileTests
         };
         
         Assert.Equal("basic", promptFile.Name);
+        Assert.Equal(1, promptFile.Version);
         
         Assert.NotNull(promptFile.Model);
         Assert.Equal("claude-3-5-sonnet-latest", promptFile.Model);
