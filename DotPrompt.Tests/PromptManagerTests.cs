@@ -69,6 +69,21 @@ public class PromptManagerTests
     }
 
     [Fact]
+    public void PromptManager_WithDifferentVersions_LoadsSuccessfully()
+    {
+        var manager = new PromptManager("multiple-version-prompts");
+        
+        var expectedPrompts = new List<string> { "basic:1", "basic:2" };
+        var actualPrompts = manager.ListPromptFileNamesWithVersions().ToList();
+        
+        Assert.Equal(expectedPrompts.Count, actualPrompts.Count);
+        foreach (var expectedPrompt in expectedPrompts)
+        {
+            Assert.Contains(expectedPrompt, actualPrompts);
+        }
+    }
+
+    [Fact]
     public void GetPromptFile_WhenRequestedWithValidName_LoadsExpectedPromptFile()
     {
         var manager = new PromptManager();
