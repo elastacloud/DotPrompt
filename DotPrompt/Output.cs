@@ -8,7 +8,7 @@ namespace DotPrompt;
 /// </summary>
 public class Output
 {
-    private string? _schemaDocument = null;
+    private string? _schemaDocument;
 
     /// <summary>
     /// Gets or sets the format of the output. This determines how the output should be structured.
