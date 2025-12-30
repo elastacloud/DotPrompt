@@ -329,7 +329,7 @@ public class PromptFileTests
     {
         var promptFile = PromptFile.FromFile("SamplePrompts/param-types.prompt");
 
-        var expectedPrompt =
+        const string expectedPrompt =
             "Parameter 1: Arthur Dent\nParameter 2: 42\nParameter 3: true\nParameter 4: 2024-01-02 03:04:05Z\nParameter 5: { SEP = True }\nParameter 6: Hello : 12";
 
         var userPrompt = promptFile.GetUserPrompt(new Dictionary<string, object>
